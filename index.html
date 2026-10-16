@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        var _parse = JSON.parse;
+        JSON.parse = function(text, reviver) {
+          if (text === undefined || text === 'undefined' || text === null || text === 'null' || text === '') {
+            return null;
+          }
+          try {
+            return _parse.call(this, text, reviver);
+          } catch (err) {
+            if (typeof text === 'string' && (text.indexOf('undefined') !== -1 || text.trim() === '')) {
+              return null;
+            }
+            throw err;
+          }
+        };
+      })();
+    </script>
+    <title>DevResumos</title>
+    <meta name="description" content="Plataforma de consulta rápida com resumos organizados sobre linguagens de programação, frameworks e ferramentas para desenvolvedores." />
+    <meta property="og:title" content="DevResumos" />
+    <meta property="og:description" content="Plataforma de consulta rápida com resumos organizados sobre linguagens de programação, frameworks e ferramentas para desenvolvedores." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <app-root></app-root>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
