@@ -772,6 +772,291 @@ input, textarea, select {
 }
 
 /* ==========================================================================
+   TELA DE PESQUISA (/pesquisa?q=termo)
+   ========================================================================== */
+.pesquisa-page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.pesquisa-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pesquisa-titulo {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.pesquisa-termo {
+  color: var(--accent-primary);
+}
+
+.pesquisa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 720px;
+}
+
+.pesquisa-campo {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.pesquisa-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.pesquisa-input-wrap .form-input {
+  padding-right: 2.5rem;
+}
+
+.pesquisa-limpar {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pesquisa-limpar:hover,
+.pesquisa-limpar:focus-visible {
+  color: var(--text-primary);
+  background-color: var(--bg-surface-hover);
+}
+
+.pesquisa-limpar:focus-visible,
+.pesquisa-chip:focus-visible,
+.arvore a:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Estados: inicial, termo curto, carregando e sem resultados */
+.pesquisa-estado {
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.pesquisa-estado-titulo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.pesquisa-estado-texto {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.pesquisa-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pesquisa-chip {
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-full);
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-hover);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background-color var(--transition-fast);
+}
+
+.pesquisa-chip:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.pesquisa-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  border: 3px solid var(--border-medium);
+  border-top-color: var(--accent-primary);
+  animation: pesquisa-giro 0.8s linear infinite;
+}
+
+@keyframes pesquisa-giro {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pesquisa-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+/* Resultados */
+.pesquisa-resultados-titulo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.pesquisa-contagem {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Destaque do termo buscado (contraste alto sobre o fundo escuro) */
+.search-highlight {
+  background-color: var(--accent-subtle);
+  color: var(--accent-hover);
+  border-bottom: 2px solid var(--accent-primary);
+  border-radius: 2px;
+  padding: 0 0.1em;
+  font-weight: 700;
+}
+
+/* Árvore: Tecnologia -> Assunto -> Tópico */
+.arvore,
+.arvore-assuntos,
+.arvore-topicos {
+  list-style: none;
+}
+
+.arvore {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.arvore-tecnologia {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.arvore-tec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.arvore-tec-link:hover .arvore-tec-nome {
+  color: var(--accent-hover);
+}
+
+.arvore-tec-inicial {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-hover);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arvore-assuntos {
+  margin: 0.75rem 0 0 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid var(--border-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.arvore-assunto-link {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.arvore-assunto-link:hover,
+.arvore-topico-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.arvore-topicos {
+  margin: 0.4rem 0 0 0.75rem;
+  padding-left: 0.9rem;
+  border-left: 1px dashed var(--border-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.arvore-topico-link {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 767px) {
+  .pesquisa-page {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .pesquisa-titulo {
+    font-size: 1.4rem;
+  }
+
+  .pesquisa-campo {
+    flex-direction: column;
+  }
+
+  .pesquisa-campo .btn-primary {
+    width: 100%;
+  }
+
+  .arvore-tecnologia {
+    padding: 0.9rem 1rem;
+  }
+
+  .arvore-assuntos {
+    margin-left: 0.5rem;
+    padding-left: 0.75rem;
+  }
+}
+
+/* ==========================================================================
    RESPONSIVIDADE (MOBILE & TABLET)
    ========================================================================== */
 @media (max-width: 1024px) {
