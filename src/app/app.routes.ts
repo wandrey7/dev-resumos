@@ -1,10 +1,14 @@
-import { Routes } from '@angular/router';
-
 export const routes: Routes = [
+  {
+    path: 'pesquisa',
+    loadComponent: () =>
+      import('./pages/pesquisa/pesquisa.component').then((m) => m.PesquisaComponent),
+  },
   {
     path: 'login',
     title: 'DevResumos · Entrar',
-    loadComponent: () => import('./pages/auth/login/login.component').then((m) => m.LoginComponent),
+    loadComponent: () =>
+      import('./pages/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'cadastro',
@@ -20,7 +24,5 @@ export const routes: Routes = [
         (m) => m.RecuperarSenhaComponent,
       ),
   },
-  // ponytail: demais rotas (home/categorias/pesquisa/admin) entram nas suas tasks;
-  // até lá o fallback manda para o login.
   { path: '**', redirectTo: 'login' },
 ];
