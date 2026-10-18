@@ -1,3 +1,11 @@
+export interface Usuario {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: 'admin' | 'usuario';
+  criadoEm: string;
+}
+
 export interface Categoria {
   id: string;
   nome: string;

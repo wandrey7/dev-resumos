@@ -1,9 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
-// ponytail: cabeçalho sem estado de login (sempre Entrar/Cadastrar) — quando a
-// task de auth portar o AuthService, reintroduzir usuarioAtual$/async e link Admin
 @Component({
   selector: 'app-cabecalho',
   standalone: true,
@@ -11,13 +10,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   template: `
     <header class="site-header">
       <div class="header-container">
-        <!-- Logo -->
         <a routerLink="/" class="header-logo">
           <span class="logo-badge">DR</span>
           <span class="logo-text">Dev<span class="logo-highlight">Resumos</span></span>
         </a>
 
-        <!-- Menu Desktop -->
         <nav class="nav-links">
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">Início</a>
           <a routerLink="/categorias" routerLinkActive="active" class="nav-link">Categorias</a>
@@ -25,12 +22,28 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         </nav>
 
         <!-- Ações do Usuário (Desktop) -->
-        <div class="header-actions">
-          <a routerLink="/login" class="btn-ghost">Entrar</a>
-          <a routerLink="/cadastro" class="btn-primary-sm">Cadastrar</a>
-        </div>
+        <ng-container *ngIf="usuario() as u; else acoesDeslogado">
+          <div class="header-actions">
+            <a *ngIf="ehAdmin()" routerLink="/admin" class="nav-link admin-link">
+              Admin <span class="admin-indicator"></span>
+            </a>
+            <div class="user-profile">
+              <span class="user-avatar">{{ iniciais(u.nome) }}</span>
+              <div class="user-meta">
+                <span class="user-name">{{ u.nome }}</span>
+                <span class="user-role">{{ ehAdmin() ? 'Administrador' : 'Usuário' }}</span>
+              </div>
+            </div>
+            <button type="button" class="btn-logout" (click)="sair()">Sair</button>
+          </div>
+        </ng-container>
+        <ng-template #acoesDeslogado>
+          <div class="header-actions">
+            <a routerLink="/login" class="btn-ghost">Entrar</a>
+            <a routerLink="/cadastro" class="btn-primary-sm">Cadastrar</a>
+          </div>
+        </ng-template>
 
-        <!-- Botão Menu Mobile -->
         <button
           type="button"
           class="mobile-menu-btn"
@@ -57,21 +70,49 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         <a routerLink="/pesquisa" (click)="fecharMenuMobile()" class="mobile-link">Pesquisa</a>
 
         <div class="mobile-auth-section">
-          <a routerLink="/login" (click)="fecharMenuMobile()" class="btn-ghost-full">Entrar</a>
-          <a routerLink="/cadastro" (click)="fecharMenuMobile()" class="btn-primary-full">Cadastrar</a>
+          <ng-container *ngIf="usuario() as u; else mobileDeslogado">
+            <div class="mobile-user-row">
+              <span class="user-avatar">{{ iniciais(u.nome) }}</span>
+              <div class="user-meta">
+                <span class="user-name">{{ u.nome }}</span>
+                <span class="user-role">{{ ehAdmin() ? 'Administrador' : 'Usuário' }}</span>
+              </div>
+            </div>
+            <a *ngIf="ehAdmin()" routerLink="/admin" (click)="fecharMenuMobile()" class="btn-ghost-full">Painel Admin</a>
+            <button type="button" class="btn-logout-full" (click)="sair()">Sair da conta</button>
+          </ng-container>
+          <ng-template #mobileDeslogado>
+            <a routerLink="/login" (click)="fecharMenuMobile()" class="btn-ghost-full">Entrar</a>
+            <a routerLink="/cadastro" (click)="fecharMenuMobile()" class="btn-primary-full">Cadastrar</a>
+          </ng-template>
         </div>
       </div>
     </header>
-  `
+  `,
 })
 export class CabecalhoComponent {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
+  readonly usuario = this.auth.usuarioAtual;
+  readonly ehAdmin = computed(() => this.usuario()?.perfil === 'admin');
   menuMobileAberto = false;
 
-  toggleMenuMobile() {
+  iniciais(nome: string): string {
+    return nome.trim().charAt(0).toUpperCase() || '?';
+  }
+
+  toggleMenuMobile(): void {
     this.menuMobileAberto = !this.menuMobileAberto;
   }
 
-  fecharMenuMobile() {
+  fecharMenuMobile(): void {
     this.menuMobileAberto = false;
+  }
+
+  sair(): void {
+    this.auth.logout();
+    this.fecharMenuMobile();
+    void this.router.navigate(['/login']);
   }
 }
