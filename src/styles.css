@@ -678,6 +678,106 @@ input, textarea, select {
   line-height: 1.45;
 }
 
+.field-hint-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   PÁGINAS DE AUTENTICAÇÃO (LOGIN, CADASTRO, RECUPERAR SENHA)
+   ========================================================================== */
+.auth-page-container {
+  min-height: calc(100vh - var(--header-height) - 150px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.auth-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.auth-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+}
+
+.auth-hint-banner {
+  background-color: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.8rem;
+  color: #e0f2fe;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.45;
+}
+
+.auth-hint-banner code {
+  font-family: var(--font-mono);
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--radius-sm);
+  color: #38bdf8;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.auth-footer-prompt {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.auth-switch-link {
+  color: var(--accent-primary);
+  font-weight: 600;
+  margin-left: 0.35rem;
+}
+
+.auth-switch-link:hover {
+  text-decoration: underline;
+}
+
 /* ==========================================================================
    RODAPÉ COMPARTILHADO
    ========================================================================== */
