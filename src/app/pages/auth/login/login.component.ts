@@ -20,18 +20,6 @@ import { AuthService } from '../../../core/services/auth.service';
           <p class="auth-subtitle">Acesse seus resumos favoritos e painel administrativo</p>
         </div>
 
-        <!-- Alerta de dica para teste simulado -->
-        <div class="auth-hint-banner">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
-          </svg>
-          <div>
-            <strong>Dica de Acesso:</strong> Use qualquer e-mail contendo <code>admin</code> (ex: <code>admin&#64;devresumos.com.br</code>) para entrar no Painel Administrativo.
-          </div>
-        </div>
-
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
           <!-- Mensagem de Erro Genérica -->
           <div *ngIf="erroMensagem" class="form-alert-error" role="alert">
@@ -135,7 +123,7 @@ export class LoginComponent {
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
-  onSubmit() {
+  async onSubmit() {
     this.erroMensagem = '';
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -145,17 +133,18 @@ export class LoginComponent {
     this.submetendo = true;
     const { email, senha } = this.loginForm.value;
 
-    setTimeout(() => {
-      // Simulação: se o e-mail ou senha tiver menos de 3 caracteres geraria erro, senão entra
-      if (!email || !senha || senha.length < 3) {
+    try {
+      const autenticado = await this.authService.login(email, senha);
+      if (!autenticado) {
         this.erroMensagem = 'E-mail ou senha inválidos';
-        this.submetendo = false;
-        return;
       }
-
-      this.authService.login(email, senha);
+    } catch (error) {
+      this.erroMensagem = error instanceof Error
+        ? error.message
+        : 'Não foi possível entrar. Tente novamente.';
+    } finally {
       this.submetendo = false;
-    }, 400);
+    }
   }
 }
 export default LoginComponent;

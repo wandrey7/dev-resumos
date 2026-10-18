@@ -66,7 +66,7 @@ import { CardTecnologiaComponent } from '../../shared/card-tecnologia/card-tecno
         </div>
       </div>
 
-      <!-- Template: /categorias (Todas as 6 Categorias) -->
+      <!-- Template: /categorias (Todas as Categorias) -->
       <ng-template #todasCategorias>
         <div class="page-header">
           <div class="hero-kicker">Estrutura de Conteúdo</div>

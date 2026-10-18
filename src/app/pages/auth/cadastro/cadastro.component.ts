@@ -41,6 +41,10 @@ export const senhasIguaisValidator: ValidatorFn = (control: AbstractControl): Va
         </div>
 
         <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+          <div *ngIf="erroMensagem" class="form-alert-error" role="alert">
+            <span>{{ erroMensagem }}</span>
+          </div>
+
           <!-- Campo Nome -->
           <div class="form-group">
             <label for="nome" class="form-label">Nome completo</label>
@@ -148,6 +152,7 @@ export class CadastroComponent {
   cadastroForm: FormGroup;
   mostrarSenha = false;
   submetendo = false;
+  erroMensagem = '';
 
   constructor(
     private fb: FormBuilder,
@@ -170,7 +175,8 @@ export class CadastroComponent {
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
-  onSubmit() {
+  async onSubmit() {
+    this.erroMensagem = '';
     if (this.cadastroForm.invalid) {
       this.cadastroForm.markAllAsTouched();
       return;
@@ -179,10 +185,18 @@ export class CadastroComponent {
     this.submetendo = true;
     const { nome, email, senha } = this.cadastroForm.value;
 
-    setTimeout(() => {
-      this.authService.cadastrar(nome, email, senha);
+    try {
+      const cadastrado = await this.authService.cadastrar(nome, email, senha);
+      if (!cadastrado) {
+        this.erroMensagem = 'Já existe uma conta cadastrada com este e-mail.';
+      }
+    } catch (error) {
+      this.erroMensagem = error instanceof Error
+        ? error.message
+        : 'Não foi possível criar a conta. Tente novamente.';
+    } finally {
       this.submetendo = false;
-    }, 400);
+    }
   }
 }
 export default CadastroComponent;

@@ -49,6 +49,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
   },
   {
+    path: 'admin/:secao',
+    title: 'DevResumos · Painel Administrativo',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent)
+  },
+  {
     path: '**',
     redirectTo: ''
   }

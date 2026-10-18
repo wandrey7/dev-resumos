@@ -11,7 +11,7 @@ export class DadosService {
       id: 'cat-1',
       nome: 'Linguagens',
       slug: 'linguagens',
-      descricao: 'Linguagens de programação compiladas e interpretadas para desenvolvimento de software moderno.',
+      descricao: 'Linguagens de programação para desenvolvimento de software, aplicações web, mobile e sistemas.',
       icone: 'code',
       ordem: 1
     },
@@ -83,6 +83,123 @@ export class DadosService {
       icone: 'terminal',
       resumo: 'Python é uma linguagem dinâmica de alto nível focada em legibilidade e produtividade. Possui uma comunidade massiva e bibliotecas abrangentes para Machine Learning, desenvolvimento web, scripts de infraestrutura e análise de dados.',
       versao: 'Python 3.12+'
+    },
+    {
+      id: 'tec-c',
+      nome: 'C',
+      slug: 'c',
+      descricao: 'Linguagem compilada de propósito geral, muito usada em sistemas operacionais e software de baixo nível.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: false,
+      recente: true,
+      icone: 'code',
+      resumo: 'C é uma linguagem compilada que oferece controle direto sobre memória e recursos do sistema, sendo amplamente usada em sistemas operacionais, sistemas embarcados e aplicações de alto desempenho.',
+      versao: 'C23'
+    },
+    {
+      id: 'tec-cpp',
+      nome: 'C++',
+      slug: 'cpp',
+      descricao: 'Linguagem de alto desempenho que combina recursos de baixo nível e programação orientada a objetos.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: true,
+      recente: true,
+      icone: 'code',
+      resumo: 'C++ amplia C com recursos como classes, templates e abstrações de alto nível, mantendo controle de desempenho usado em jogos, aplicações gráficas e sistemas.',
+      versao: 'C++23'
+    },
+    {
+      id: 'tec-csharp',
+      nome: 'C#',
+      slug: 'csharp',
+      descricao: 'Linguagem moderna da plataforma .NET para aplicações web, desktop, serviços e jogos.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: true,
+      recente: true,
+      icone: 'code',
+      resumo: 'C# é uma linguagem fortemente tipada e orientada a objetos, integrada ao ecossistema .NET para criar aplicações web, serviços, ferramentas desktop e jogos com Unity.',
+      versao: 'C# 13'
+    },
+    {
+      id: 'tec-go',
+      nome: 'Go',
+      slug: 'go',
+      descricao: 'Linguagem compilada com suporte nativo à concorrência, popular em serviços e infraestrutura.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: false,
+      recente: true,
+      icone: 'code',
+      resumo: 'Go é uma linguagem compilada desenvolvida no Google, com sintaxe enxuta e goroutines para concorrência. É bastante usada em APIs, ferramentas de infraestrutura e serviços distribuídos.',
+      versao: 'Go 1.24'
+    },
+    {
+      id: 'tec-rust',
+      nome: 'Rust',
+      slug: 'rust',
+      descricao: 'Linguagem de sistemas focada em desempenho e segurança de memória sem garbage collector.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: false,
+      recente: true,
+      icone: 'code',
+      resumo: 'Rust combina desempenho próximo ao de C e C++ com garantias de segurança de memória verificadas em tempo de compilação, sendo usada em ferramentas, infraestrutura e sistemas.',
+      versao: 'Rust 2024 Edition'
+    },
+    {
+      id: 'tec-kotlin',
+      nome: 'Kotlin',
+      slug: 'kotlin',
+      descricao: 'Linguagem concisa e interoperável com Java, amplamente utilizada no desenvolvimento Android.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: false,
+      recente: true,
+      icone: 'code',
+      resumo: 'Kotlin é uma linguagem estaticamente tipada que roda na JVM e interoperá com Java. É uma das linguagens recomendadas para desenvolvimento Android moderno.',
+      versao: 'Kotlin 2.1'
+    },
+    {
+      id: 'tec-php',
+      nome: 'PHP',
+      slug: 'php',
+      descricao: 'Linguagem de script muito usada no desenvolvimento web do lado do servidor.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: false,
+      recente: true,
+      icone: 'code',
+      resumo: 'PHP é uma linguagem de script voltada principalmente à web, executada no servidor e usada em aplicações, APIs e sistemas de gerenciamento de conteúdo.',
+      versao: 'PHP 8.4'
+    },
+    {
+      id: 'tec-ruby',
+      nome: 'Ruby',
+      slug: 'ruby',
+      descricao: 'Linguagem dinâmica conhecida por sua sintaxe expressiva e pelo framework Ruby on Rails.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: false,
+      recente: true,
+      icone: 'code',
+      resumo: 'Ruby é uma linguagem dinâmica orientada a objetos, projetada para favorecer legibilidade e produtividade. Seu ecossistema inclui o framework web Ruby on Rails.',
+      versao: 'Ruby 3.4'
+    },
+    {
+      id: 'tec-swift',
+      nome: 'Swift',
+      slug: 'swift',
+      descricao: 'Linguagem compilada da Apple para desenvolver aplicativos para iOS, macOS e outras plataformas.',
+      categoriaId: 'cat-1',
+      categoriaNome: 'Linguagens',
+      popular: false,
+      recente: true,
+      icone: 'code',
+      resumo: 'Swift é uma linguagem moderna e estaticamente tipada, desenvolvida pela Apple para aplicações em iOS, macOS, watchOS e demais plataformas do ecossistema.',
+      versao: 'Swift 6'
     },
     {
       id: 'tec-sql',
@@ -748,6 +865,46 @@ export class CardComponent {
     }
   ]);
 
+  constructor() {
+    this.restaurarLista('devresumos_categorias', this.categoriasSubject);
+    this.restaurarLista('devresumos_tecnologias', this.tecnologiasSubject);
+    this.restaurarLista('devresumos_conteudos', this.conteudosSubject);
+    this.restaurarLista('devresumos_exemplos', this.exemplosSubject);
+    this.restaurarLista('devresumos_usuarios', this.usuariosSubject);
+  }
+
+  private restaurarLista<T>(chave: string, subject: BehaviorSubject<T[]>): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const salvo = window.localStorage.getItem(chave);
+      if (!salvo) return;
+      const dados: unknown = JSON.parse(salvo);
+      if (!Array.isArray(dados)) {
+        throw new Error(`Os dados salvos em "${chave}" não são uma lista.`);
+      }
+      subject.next(dados as T[]);
+    } catch (error) {
+      console.error(`Não foi possível restaurar "${chave}". Os dados iniciais serão usados.`, error);
+      window.localStorage.removeItem(chave);
+    }
+  }
+
+  private publicarLista<T>(chave: string, subject: BehaviorSubject<T[]>, lista: T[]): void {
+    if (typeof window !== 'undefined') {
+      try {
+        const dados = chave === 'devresumos_usuarios'
+          ? (lista as Usuario[]).map(({ senha: _senha, ...usuario }) => usuario)
+          : lista;
+        window.localStorage.setItem(chave, JSON.stringify(dados));
+      } catch (error) {
+        console.error(`Não foi possível salvar "${chave}".`, error);
+        throw new Error('Não foi possível salvar os dados. Verifique o armazenamento do navegador e tente novamente.');
+      }
+    }
+    subject.next(lista);
+  }
+
   // Observables públicos
   readonly categorias$: Observable<Categoria[]> = this.categoriasSubject.asObservable();
   readonly tecnologias$: Observable<Tecnologia[]> = this.tecnologiasSubject.asObservable();
@@ -886,7 +1043,7 @@ export class CardComponent {
           ...tec,
           categoriaNome: cat?.nome || list[idx].categoriaNome
         } as Tecnologia;
-        this.tecnologiasSubject.next(list);
+        this.publicarLista('devresumos_tecnologias', this.tecnologiasSubject, list);
         return list[idx];
       }
     }
@@ -903,13 +1060,20 @@ export class CardComponent {
       versao: tec.versao || '1.0'
     };
     list.unshift(nova);
-    this.tecnologiasSubject.next(list);
+    this.publicarLista('devresumos_tecnologias', this.tecnologiasSubject, list);
     return nova;
   }
 
   excluirTecnologia(id: string) {
-    const list = this.tecnologiasSubject.getValue().filter(t => t.id !== id);
-    this.tecnologiasSubject.next(list);
+    const conteudosRemovidos = this.conteudosSubject.getValue().filter(c => c.tecnologiaId === id);
+    const idsConteudos = new Set(conteudosRemovidos.map(c => c.id));
+    const conteudos = this.conteudosSubject.getValue().filter(c => c.tecnologiaId !== id);
+    const exemplos = this.exemplosSubject.getValue().filter(e => !idsConteudos.has(e.conteudoId));
+    const tecnologias = this.tecnologiasSubject.getValue().filter(t => t.id !== id);
+
+    this.publicarLista('devresumos_conteudos', this.conteudosSubject, conteudos);
+    this.publicarLista('devresumos_exemplos', this.exemplosSubject, exemplos);
+    this.publicarLista('devresumos_tecnologias', this.tecnologiasSubject, tecnologias);
   }
 
   // CRUD CATEGORIAS
@@ -919,7 +1083,13 @@ export class CardComponent {
       const idx = list.findIndex(item => item.id === cat.id);
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...cat } as Categoria;
-        this.categoriasSubject.next(list);
+        const tecnologias = this.tecnologiasSubject.getValue().map(tecnologia =>
+          tecnologia.categoriaId === cat.id
+            ? { ...tecnologia, categoriaNome: list[idx].nome }
+            : tecnologia
+        );
+        this.publicarLista('devresumos_tecnologias', this.tecnologiasSubject, tecnologias);
+        this.publicarLista('devresumos_categorias', this.categoriasSubject, list);
         return list[idx];
       }
     }
@@ -932,13 +1102,15 @@ export class CardComponent {
       ordem: list.length + 1
     };
     list.push(nova);
-    this.categoriasSubject.next(list);
+    this.publicarLista('devresumos_categorias', this.categoriasSubject, list);
     return nova;
   }
 
-  excluirCategoria(id: string) {
+  excluirCategoria(id: string): boolean {
+    if (this.tecnologiasSubject.getValue().some(t => t.categoriaId === id)) return false;
     const list = this.categoriasSubject.getValue().filter(c => c.id !== id);
-    this.categoriasSubject.next(list);
+    this.publicarLista('devresumos_categorias', this.categoriasSubject, list);
+    return true;
   }
 
   // CRUD CONTEÚDOS
@@ -948,7 +1120,7 @@ export class CardComponent {
       const idx = list.findIndex(item => item.id === cnt.id);
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...cnt } as Conteudo;
-        this.conteudosSubject.next(list);
+        this.publicarLista('devresumos_conteudos', this.conteudosSubject, list);
         return list[idx];
       }
     }
@@ -961,13 +1133,15 @@ export class CardComponent {
       ordem: cnt.ordem || (list.length + 1)
     };
     list.push(novo);
-    this.conteudosSubject.next(list);
+    this.publicarLista('devresumos_conteudos', this.conteudosSubject, list);
     return novo;
   }
 
   excluirConteudo(id: string) {
     const list = this.conteudosSubject.getValue().filter(c => c.id !== id);
-    this.conteudosSubject.next(list);
+    const exemplos = this.exemplosSubject.getValue().filter(e => e.conteudoId !== id);
+    this.publicarLista('devresumos_exemplos', this.exemplosSubject, exemplos);
+    this.publicarLista('devresumos_conteudos', this.conteudosSubject, list);
   }
 
   // CRUD EXEMPLOS
@@ -977,7 +1151,7 @@ export class CardComponent {
       const idx = list.findIndex(item => item.id === ex.id);
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...ex } as ExemploCodigo;
-        this.exemplosSubject.next(list);
+        this.publicarLista('devresumos_exemplos', this.exemplosSubject, list);
         return list[idx];
       }
     }
@@ -990,13 +1164,13 @@ export class CardComponent {
       explicacao: ex.explicacao || ''
     };
     list.push(novo);
-    this.exemplosSubject.next(list);
+    this.publicarLista('devresumos_exemplos', this.exemplosSubject, list);
     return novo;
   }
 
   excluirExemplo(id: string) {
     const list = this.exemplosSubject.getValue().filter(e => e.id !== id);
-    this.exemplosSubject.next(list);
+    this.publicarLista('devresumos_exemplos', this.exemplosSubject, list);
   }
 
   // CRUD USUÁRIOS
@@ -1006,7 +1180,7 @@ export class CardComponent {
       const idx = list.findIndex(item => item.id === usr.id);
       if (idx !== -1) {
         list[idx] = { ...list[idx], ...usr } as Usuario;
-        this.usuariosSubject.next(list);
+        this.publicarLista('devresumos_usuarios', this.usuariosSubject, list);
         return list[idx];
       }
     }
@@ -1015,16 +1189,15 @@ export class CardComponent {
       nome: usr.nome || 'Novo Usuário',
       email: usr.email || '',
       perfil: usr.perfil || 'usuario',
-      senha: usr.senha || 'password123',
       criadoEm: new Date().toISOString().split('T')[0]
     };
     list.push(novo);
-    this.usuariosSubject.next(list);
+    this.publicarLista('devresumos_usuarios', this.usuariosSubject, list);
     return novo;
   }
 
   excluirUsuario(id: string) {
     const list = this.usuariosSubject.getValue().filter(u => u.id !== id);
-    this.usuariosSubject.next(list);
+    this.publicarLista('devresumos_usuarios', this.usuariosSubject, list);
   }
 }

@@ -7,13 +7,11 @@ export const adminGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   if (!authService.estaAutenticado) {
-    router.navigate(['/login'], { queryParams: { redirectUrl: '/admin' } });
-    return false;
+    return router.createUrlTree(['/login'], { queryParams: { redirectUrl: '/admin' } });
   }
 
   if (!authService.ehAdmin) {
-    router.navigate(['/']);
-    return false;
+    return router.createUrlTree(['/']);
   }
 
   return true;

@@ -458,6 +458,11 @@ input, textarea, select {
   transition: all var(--transition-fast);
 }
 
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .btn-copy:hover {
   color: var(--text-primary);
   background-color: rgba(255, 255, 255, 0.08);
@@ -1158,6 +1163,36 @@ input, textarea, select {
   padding: 1.5rem 1.5rem 4rem;
 }
 
+.technology-loading-state {
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: technology-loading-spin 0.8s linear infinite;
+}
+
+@keyframes technology-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.technology-empty-state {
+  margin: 0;
+  max-width: none;
+}
+
 .tec-breadcrumb-bar {
   display: flex;
   align-items: center;
@@ -1318,6 +1353,7 @@ input, textarea, select {
   flex-direction: column;
   gap: 0.25rem;
   overflow-y: auto;
+  max-height: calc(100vh - var(--header-height) - 16rem);
   padding-right: 0.35rem;
 }
 
@@ -1882,6 +1918,21 @@ input, textarea, select {
   animation: slideDown 200ms ease;
 }
 
+.admin-toast-error {
+  background-color: var(--danger-bg);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  color: #fca5a5;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  animation: slideDown 200ms ease;
+}
+
 .toast-close {
   margin-left: auto;
   color: #6ee7b7;
@@ -1947,7 +1998,7 @@ input, textarea, select {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 

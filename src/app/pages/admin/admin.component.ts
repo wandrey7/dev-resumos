@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DadosService } from '../../core/services/dados.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Categoria, Tecnologia, Conteudo, ExemploCodigo, Usuario } from '../../core/models/models';
 
 type SecaoAdmin = 'usuarios' | 'tecnologias' | 'categorias' | 'conteudos' | 'exemplos';
+type TipoItemAdmin = 'tecnologia' | 'categoria' | 'conteudo' | 'exemplo' | 'usuario';
 
 @Component({
   selector: 'app-admin',
@@ -107,6 +108,10 @@ type SecaoAdmin = 'usuarios' | 'tecnologias' | 'categorias' | 'conteudos' | 'exe
           <span>{{ mensagemSucesso }}</span>
           <button type="button" class="toast-close" (click)="mensagemSucesso = ''">✕</button>
         </div>
+        <div *ngIf="mensagemErro" class="admin-toast-error" role="alert">
+          <span>{{ mensagemErro }}</span>
+          <button type="button" class="toast-close" (click)="mensagemErro = ''" aria-label="Fechar mensagem">✕</button>
+        </div>
 
         <!-- Cabeçalho da Seção Atual -->
         <header class="admin-section-header">
@@ -121,7 +126,7 @@ type SecaoAdmin = 'usuarios' | 'tecnologias' | 'categorias' | 'conteudos' | 'exe
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            Novo {{ rotuloItemSingular }}
+            {{ secaoAtiva === 'categorias' ? 'Nova' : 'Novo' }} {{ rotuloItemSingular }}
           </button>
         </header>
 
@@ -480,6 +485,12 @@ type SecaoAdmin = 'usuarios' | 'tecnologias' | 'categorias' | 'conteudos' | 'exe
             <div *ngIf="isFormInvalido(formUsuario, 'email')" class="field-error-text">Informe um e-mail válido.</div>
           </div>
 
+          <div class="form-group" *ngIf="!editandoId">
+            <label class="form-label" for="usr-senha">Senha inicial *</label>
+            <input id="usr-senha" type="password" formControlName="senha" class="form-input" autocomplete="new-password" />
+            <div *ngIf="isFormInvalido(formUsuario, 'senha')" class="field-error-text">A senha deve ter pelo menos 8 caracteres.</div>
+          </div>
+
           <div class="form-group">
             <label class="form-label" for="usr-perfil">Perfil de Acesso *</label>
             <select id="usr-perfil" formControlName="perfil" class="form-input">
@@ -508,11 +519,12 @@ type SecaoAdmin = 'usuarios' | 'tecnologias' | 'categorias' | 'conteudos' | 'exe
           <p>
             Tem certeza de que deseja excluir <strong>"{{ itemParaExcluir.nome }}"</strong>?
           </p>
-          <p class="danger-subtext">Esta operação removerá o item da lista em memória.</p>
+          <p class="danger-subtext">Esta ação não pode ser desfeita.</p>
+          <p class="danger-subtext">{{ detalhesExclusao }}</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-ghost-sm" (click)="cancelarExclusao()">Cancelar</button>
-          <button type="button" class="btn-danger" (click)="executarExclusao()">Confirmar Exclusão</button>
+          <button type="button" class="btn-danger" (click)="executarExclusao()" [disabled]="exclusaoBloqueada">Confirmar Exclusão</button>
         </div>
       </div>
     </div>
@@ -522,6 +534,7 @@ export class AdminComponent implements OnInit {
   secaoAtiva: SecaoAdmin = 'tecnologias';
   filtroTabela = '';
   mensagemSucesso = '';
+  mensagemErro = '';
 
   tecnologias: Tecnologia[] = [];
   categorias: Categoria[] = [];
@@ -532,7 +545,7 @@ export class AdminComponent implements OnInit {
   // Modais
   modalAberto = false;
   editandoId: string | null = null;
-  itemParaExcluir: { tipo: string; id: string; nome: string } | null = null;
+  itemParaExcluir: { tipo: TipoItemAdmin; id: string; nome: string } | null = null;
 
   // Formulários Reativos
   formTecnologia: FormGroup;
@@ -545,7 +558,8 @@ export class AdminComponent implements OnInit {
     private dadosService: DadosService,
     public authService: AuthService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.formTecnologia = this.fb.group({
       nome: ['', [Validators.required]],
@@ -578,7 +592,8 @@ export class AdminComponent implements OnInit {
     this.formUsuario = this.fb.group({
       nome: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      perfil: ['usuario', [Validators.required]]
+      perfil: ['usuario', [Validators.required]],
+      senha: ['', [Validators.required, Validators.minLength(8)]]
     });
   }
 
@@ -588,11 +603,25 @@ export class AdminComponent implements OnInit {
     this.dadosService.conteudos$.subscribe(list => (this.conteudos = list));
     this.dadosService.exemplos$.subscribe(list => (this.exemplos = list));
     this.dadosService.usuarios$.subscribe(list => (this.usuarios = list));
+    this.route.paramMap.subscribe(params => {
+      const secao = params.get('secao');
+      const secoes: SecaoAdmin[] = ['usuarios', 'tecnologias', 'categorias', 'conteudos', 'exemplos'];
+      if (!secao) {
+        this.secaoAtiva = 'tecnologias';
+      } else if (secoes.includes(secao as SecaoAdmin)) {
+        this.secaoAtiva = secao as SecaoAdmin;
+      } else {
+        this.router.navigate(['/admin/tecnologias'], { replaceUrl: true });
+      }
+      this.filtroTabela = '';
+    });
   }
 
   mudarSecao(secao: SecaoAdmin) {
     this.secaoAtiva = secao;
     this.filtroTabela = '';
+    this.mensagemErro = '';
+    this.router.navigate(['/admin', secao]);
   }
 
   sair() {
@@ -744,10 +773,13 @@ export class AdminComponent implements OnInit {
         explicacao: ''
       });
     } else if (this.secaoAtiva === 'usuarios') {
+      this.formUsuario.get('senha')?.setValidators([Validators.required, Validators.minLength(8)]);
+      this.formUsuario.get('senha')?.updateValueAndValidity();
       this.formUsuario.reset({
         nome: '',
         email: '',
-        perfil: 'usuario'
+        perfil: 'usuario',
+        senha: ''
       });
     }
   }
@@ -799,10 +831,13 @@ export class AdminComponent implements OnInit {
   abrirModalEdicaoUsuario(usr: Usuario) {
     this.editandoId = usr.id;
     this.modalAberto = true;
+    this.formUsuario.get('senha')?.clearValidators();
+    this.formUsuario.get('senha')?.updateValueAndValidity();
     this.formUsuario.patchValue({
       nome: usr.nome,
       email: usr.email,
-      perfil: usr.perfil
+      perfil: usr.perfil,
+      senha: ''
     });
   }
 
@@ -812,10 +847,47 @@ export class AdminComponent implements OnInit {
   }
 
   exibirSucesso(msg: string) {
+    this.mensagemErro = '';
     this.mensagemSucesso = msg;
     setTimeout(() => {
       this.mensagemSucesso = '';
     }, 3500);
+  }
+
+  exibirErro(msg: string) {
+    this.mensagemSucesso = '';
+    this.mensagemErro = msg;
+  }
+
+  private mensagemDaFalha(error: unknown): string {
+    return error instanceof Error ? error.message : 'Não foi possível concluir a ação. Tente novamente.';
+  }
+
+  get detalhesExclusao(): string {
+    if (!this.itemParaExcluir) return '';
+    const { tipo, id } = this.itemParaExcluir;
+    if (tipo === 'categoria') {
+      const quantidade = this.tecnologias.filter(tecnologia => tecnologia.categoriaId === id).length;
+      return quantidade
+        ? `Esta categoria possui ${quantidade} tecnologia(s) e não pode ser excluída enquanto houver vínculos.`
+        : 'A categoria não possui tecnologias associadas.';
+    }
+    if (tipo === 'tecnologia') {
+      const conteudos = this.conteudos.filter(conteudo => conteudo.tecnologiaId === id);
+      const idsConteudos = new Set(conteudos.map(conteudo => conteudo.id));
+      const exemplos = this.exemplos.filter(exemplo => idsConteudos.has(exemplo.conteudoId));
+      return `Também serão excluídos ${conteudos.length} conteúdo(s) e ${exemplos.length} exemplo(s) de código associados.`;
+    }
+    if (tipo === 'conteudo') {
+      const quantidade = this.exemplos.filter(exemplo => exemplo.conteudoId === id).length;
+      return `Também serão excluídos ${quantidade} exemplo(s) de código associado(s).`;
+    }
+    return '';
+  }
+
+  get exclusaoBloqueada(): boolean {
+    return this.itemParaExcluir?.tipo === 'categoria' &&
+      this.tecnologias.some(tecnologia => tecnologia.categoriaId === this.itemParaExcluir?.id);
   }
 
   // Ações de Salvar
@@ -825,14 +897,15 @@ export class AdminComponent implements OnInit {
       return;
     }
     const val = this.formTecnologia.value;
-    this.dadosService.salvarTecnologia({
-      id: this.editandoId || undefined,
-      ...val
-    });
-    this.exibirSucesso(
-      this.editandoId ? `Tecnologia "${val.nome}" atualizada com sucesso!` : `Tecnologia "${val.nome}" adicionada com sucesso!`
-    );
-    this.fecharModal();
+    try {
+      this.dadosService.salvarTecnologia({ id: this.editandoId || undefined, ...val });
+      this.exibirSucesso(
+        this.editandoId ? `Tecnologia "${val.nome}" atualizada com sucesso!` : `Tecnologia "${val.nome}" adicionada com sucesso!`
+      );
+      this.fecharModal();
+    } catch (error) {
+      this.exibirErro(this.mensagemDaFalha(error));
+    }
   }
 
   salvarCategoria() {
@@ -841,14 +914,15 @@ export class AdminComponent implements OnInit {
       return;
     }
     const val = this.formCategoria.value;
-    this.dadosService.salvarCategoria({
-      id: this.editandoId || undefined,
-      ...val
-    });
-    this.exibirSucesso(
-      this.editandoId ? `Categoria "${val.nome}" atualizada com sucesso!` : `Categoria "${val.nome}" adicionada com sucesso!`
-    );
-    this.fecharModal();
+    try {
+      this.dadosService.salvarCategoria({ id: this.editandoId || undefined, ...val });
+      this.exibirSucesso(
+        this.editandoId ? `Categoria "${val.nome}" atualizada com sucesso!` : `Categoria "${val.nome}" adicionada com sucesso!`
+      );
+      this.fecharModal();
+    } catch (error) {
+      this.exibirErro(this.mensagemDaFalha(error));
+    }
   }
 
   salvarConteudo() {
@@ -857,14 +931,15 @@ export class AdminComponent implements OnInit {
       return;
     }
     const val = this.formConteudo.value;
-    this.dadosService.salvarConteudo({
-      id: this.editandoId || undefined,
-      ...val
-    });
-    this.exibirSucesso(
-      this.editandoId ? `Conteúdo "${val.titulo}" atualizado com sucesso!` : `Conteúdo "${val.titulo}" adicionado com sucesso!`
-    );
-    this.fecharModal();
+    try {
+      this.dadosService.salvarConteudo({ id: this.editandoId || undefined, ...val });
+      this.exibirSucesso(
+        this.editandoId ? `Conteúdo "${val.titulo}" atualizado com sucesso!` : `Conteúdo "${val.titulo}" adicionado com sucesso!`
+      );
+      this.fecharModal();
+    } catch (error) {
+      this.exibirErro(this.mensagemDaFalha(error));
+    }
   }
 
   salvarExemplo() {
@@ -873,34 +948,64 @@ export class AdminComponent implements OnInit {
       return;
     }
     const val = this.formExemplo.value;
-    this.dadosService.salvarExemplo({
-      id: this.editandoId || undefined,
-      ...val
-    });
-    this.exibirSucesso(
-      this.editandoId ? `Exemplo "${val.titulo}" atualizado com sucesso!` : `Exemplo "${val.titulo}" adicionado com sucesso!`
-    );
-    this.fecharModal();
+    try {
+      this.dadosService.salvarExemplo({ id: this.editandoId || undefined, ...val });
+      this.exibirSucesso(
+        this.editandoId ? `Exemplo "${val.titulo}" atualizado com sucesso!` : `Exemplo "${val.titulo}" adicionado com sucesso!`
+      );
+      this.fecharModal();
+    } catch (error) {
+      this.exibirErro(this.mensagemDaFalha(error));
+    }
   }
 
-  salvarUsuario() {
+  async salvarUsuario() {
     if (this.formUsuario.invalid) {
       this.formUsuario.markAllAsTouched();
       return;
     }
     const val = this.formUsuario.value;
-    this.dadosService.salvarUsuario({
-      id: this.editandoId || undefined,
-      ...val
-    });
-    this.exibirSucesso(
-      this.editandoId ? `Usuário "${val.nome}" atualizado com sucesso!` : `Usuário "${val.nome}" cadastrado com sucesso!`
-    );
-    this.fecharModal();
+    const atual = this.usuarios.find(usuario => usuario.id === this.editandoId);
+    const outrosAdmins = this.usuarios.filter(usuario => usuario.perfil === 'admin' && usuario.id !== atual?.id);
+    if (atual?.id === this.authService.usuarioAtual?.id && val.perfil !== 'admin' && outrosAdmins.length === 0) {
+      this.exibirErro('Não é possível remover o perfil do único administrador cadastrado.');
+      return;
+    }
+    try {
+      const { senha, ...dadosUsuario } = val;
+      const usuarioSalvo = this.dadosService.salvarUsuario({
+        id: this.editandoId || undefined,
+        ...dadosUsuario
+      });
+      if (!this.editandoId) {
+        await this.authService.definirSenha(usuarioSalvo.id, senha);
+      } else {
+        this.authService.atualizarSessao(usuarioSalvo);
+      }
+      this.exibirSucesso(
+        this.editandoId ? `Usuário "${val.nome}" atualizado com sucesso!` : `Usuário "${val.nome}" cadastrado com sucesso!`
+      );
+      this.fecharModal();
+    } catch (error) {
+      this.exibirErro(this.mensagemDaFalha(error));
+    }
   }
 
   // Exclusão
-  confirmarExclusao(tipo: string, id: string, nome: string) {
+  confirmarExclusao(tipo: TipoItemAdmin, id: string, nome: string) {
+    this.mensagemErro = '';
+    if (tipo === 'usuario' && id === this.authService.usuarioAtual?.id) {
+      this.exibirErro('Não é possível excluir o usuário que está conectado.');
+      return;
+    }
+    if (tipo === 'usuario') {
+      const usuario = this.usuarios.find(item => item.id === id);
+      const adminsRestantes = this.usuarios.filter(item => item.perfil === 'admin' && item.id !== id);
+      if (usuario?.perfil === 'admin' && adminsRestantes.length === 0) {
+        this.exibirErro('Não é possível excluir o único administrador cadastrado.');
+        return;
+      }
+    }
     this.itemParaExcluir = { tipo, id, nome };
   }
 
@@ -912,20 +1017,29 @@ export class AdminComponent implements OnInit {
     if (!this.itemParaExcluir) return;
     const { tipo, id, nome } = this.itemParaExcluir;
 
-    if (tipo === 'tecnologia') {
-      this.dadosService.excluirTecnologia(id);
-    } else if (tipo === 'categoria') {
-      this.dadosService.excluirCategoria(id);
-    } else if (tipo === 'conteudo') {
-      this.dadosService.excluirConteudo(id);
-    } else if (tipo === 'exemplo') {
-      this.dadosService.excluirExemplo(id);
-    } else if (tipo === 'usuario') {
-      this.dadosService.excluirUsuario(id);
-    }
+    try {
+      if (tipo === 'tecnologia') {
+        this.dadosService.excluirTecnologia(id);
+      } else if (tipo === 'categoria') {
+        if (!this.dadosService.excluirCategoria(id)) {
+          this.exibirErro('Esta categoria ainda possui tecnologias. Remova ou realoque as tecnologias antes de excluí-la.');
+          this.itemParaExcluir = null;
+          return;
+        }
+      } else if (tipo === 'conteudo') {
+        this.dadosService.excluirConteudo(id);
+      } else if (tipo === 'exemplo') {
+        this.dadosService.excluirExemplo(id);
+      } else {
+        this.dadosService.excluirUsuario(id);
+      }
 
-    this.exibirSucesso(`"${nome}" foi excluído com sucesso!`);
-    this.itemParaExcluir = null;
+      this.exibirSucesso(`"${nome}" foi excluído com sucesso!`);
+      this.itemParaExcluir = null;
+    } catch (error) {
+      this.exibirErro(this.mensagemDaFalha(error));
+      this.itemParaExcluir = null;
+    }
   }
 }
 export default AdminComponent;

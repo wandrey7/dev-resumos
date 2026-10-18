@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -11,8 +11,15 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
   standalone: true,
   imports: [CommonModule, RouterLink, BlocoCodigoComponent],
   template: `
+    <div *ngIf="carregando" class="page-container" role="status" aria-live="polite">
+      <div class="technology-loading-state">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <p>Carregando conteúdo...</p>
+      </div>
+    </div>
+
     <!-- Tela 404 Amigável quando a tecnologia não for encontrada -->
-    <div *ngIf="tecnologiaNaoEncontrada" class="page-container">
+    <div *ngIf="!carregando && tecnologiaNaoEncontrada" class="page-container">
       <div class="empty-state-box not-found-box">
         <div class="not-found-status">404</div>
         <h1 class="empty-title">Tecnologia não encontrada</h1>
@@ -27,7 +34,7 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
     </div>
 
     <!-- Tela Principal da Tecnologia -->
-    <div *ngIf="tecnologia" class="page-tecnologia">
+    <div *ngIf="!carregando && tecnologia" class="page-tecnologia">
       <!-- Breadcrumb Superior -->
       <div class="tec-breadcrumb-bar">
         <div class="tec-breadcrumb">
@@ -73,8 +80,9 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
 
         <div *ngIf="menuTopicosMobileAberto" class="mobile-topics-list">
           <a
-            href="javascript:void(0)"
-            (click)="rolarParaSecao('oque-e')"
+            [routerLink]="['/tecnologia', tecnologia.slug]"
+            fragment="oque-e"
+            (click)="menuTopicosMobileAberto = false"
             class="mobile-topic-item"
             [class.active]="itemAtivoSlug === 'oque-e'"
           >
@@ -82,8 +90,9 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
           </a>
           <a
             *ngFor="let assunto of conteudos"
-            href="javascript:void(0)"
-            (click)="rolarParaSecao(assunto.slug)"
+            [routerLink]="['/tecnologia', tecnologia.slug]"
+            [fragment]="assunto.slug"
+            (click)="menuTopicosMobileAberto = false"
             class="mobile-topic-item"
             [class.active]="itemAtivoSlug === assunto.slug"
           >
@@ -107,8 +116,8 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
               <ul class="nav-topics-list">
                 <li>
                   <a
-                    href="javascript:void(0)"
-                    (click)="rolarParaSecao('oque-e')"
+                    [routerLink]="['/tecnologia', tecnologia.slug]"
+                    fragment="oque-e"
                     class="nav-topic-link"
                     [class.active]="itemAtivoSlug === 'oque-e'"
                   >
@@ -118,8 +127,8 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
                 </li>
                 <li *ngFor="let assunto of conteudos">
                   <a
-                    href="javascript:void(0)"
-                    (click)="rolarParaSecao(assunto.slug)"
+                    [routerLink]="['/tecnologia', tecnologia.slug]"
+                    [fragment]="assunto.slug"
                     class="nav-topic-link"
                     [class.active]="itemAtivoSlug === assunto.slug"
                   >
@@ -161,6 +170,11 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
             </section>
           </header>
 
+          <div *ngIf="conteudos.length === 0" class="empty-state-box technology-empty-state">
+            <h2 class="empty-title">Esta tecnologia ainda não tem conteúdo</h2>
+            <p class="empty-text">Estamos preparando resumos e exemplos para esta tecnologia. Volte em breve.</p>
+          </div>
+
           <!-- Seções por Assunto -->
           <div class="assuntos-container">
             <section
@@ -201,18 +215,20 @@ import { BlocoCodigoComponent } from '../../shared/bloco-codigo/bloco-codigo.com
     </div>
   `
 })
-export class TecnologiaComponent implements OnInit, OnDestroy, AfterViewInit {
+export class TecnologiaComponent implements OnInit, OnDestroy {
   tecnologia: Tecnologia | null = null;
   categoriaSlug = '';
   conteudos: Conteudo[] = [];
   exemplosMap = new Map<string, ExemploCodigo[]>();
   tecnologiaNaoEncontrada = false;
+  carregando = true;
   slugSolicitado = '';
   itemAtivoSlug = 'oque-e';
   menuTopicosMobileAberto = false;
 
   private routeSub?: Subscription;
   private fragmentSub?: Subscription;
+  private loadingTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private dadosService: DadosService,
@@ -225,32 +241,27 @@ export class TecnologiaComponent implements OnInit, OnDestroy, AfterViewInit {
       const slug = params.get('slug');
       if (slug) {
         this.slugSolicitado = slug;
-        this.carregarTecnologia(slug);
+        this.carregando = true;
+        this.tecnologiaNaoEncontrada = false;
+        this.tecnologia = null;
+        this.menuTopicosMobileAberto = false;
+        clearTimeout(this.loadingTimer);
+        this.loadingTimer = setTimeout(() => this.carregarTecnologia(slug), 0);
       }
     });
 
     this.fragmentSub = this.route.fragment.subscribe(fragment => {
-      if (fragment) {
-        this.itemAtivoSlug = fragment;
-        setTimeout(() => {
-          this.rolarParaSecao(fragment, false);
-        }, 150);
+      this.itemAtivoSlug = fragment || 'oque-e';
+      if (fragment && !this.carregando) {
+        setTimeout(() => this.rolarParaSecao(fragment, false), 0);
       }
     });
-  }
-
-  ngAfterViewInit() {
-    const fragment = this.route.snapshot.fragment;
-    if (fragment) {
-      setTimeout(() => {
-        this.rolarParaSecao(fragment, false);
-      }, 300);
-    }
   }
 
   ngOnDestroy() {
     this.routeSub?.unsubscribe();
     this.fragmentSub?.unsubscribe();
+    clearTimeout(this.loadingTimer);
   }
 
   carregarTecnologia(slug: string) {
@@ -258,6 +269,7 @@ export class TecnologiaComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!tec) {
       this.tecnologiaNaoEncontrada = true;
       this.tecnologia = null;
+      this.carregando = false;
       return;
     }
 
@@ -273,6 +285,16 @@ export class TecnologiaComponent implements OnInit, OnDestroy, AfterViewInit {
     this.exemplosMap.clear();
     for (const c of this.conteudos) {
       this.exemplosMap.set(c.id, this.dadosService.getExemplosByConteudoId(c.id));
+    }
+
+    const fragment = this.route.snapshot.fragment;
+    this.itemAtivoSlug = fragment && this.conteudos.some(c => c.slug === fragment)
+      ? fragment
+      : 'oque-e';
+    this.carregando = false;
+
+    if (fragment === 'oque-e' || this.conteudos.some(c => c.slug === fragment)) {
+      setTimeout(() => this.rolarParaSecao(fragment, false), 0);
     }
   }
 
@@ -302,6 +324,20 @@ export class TecnologiaComponent implements OnInit, OnDestroy, AfterViewInit {
         behavior: 'smooth'
       });
     }
+  }
+
+  @HostListener('window:scroll')
+  atualizarAssuntoAtivo() {
+    if (!this.tecnologia) return;
+
+    const secoes = Array.from(
+      document.querySelectorAll<HTMLElement>('.tec-main-header[id], .assunto-section[id]')
+    );
+    const linhaAtiva = (window.scrollY || window.pageYOffset) + 120;
+    const secoesVisiveis = secoes.filter(secao => secao.offsetTop <= linhaAtiva);
+    const secaoAtiva = secoesVisiveis[secoesVisiveis.length - 1];
+
+    this.itemAtivoSlug = secaoAtiva?.id || secoes[0]?.id || 'oque-e';
   }
 
   toggleMenuTopicosMobile() {

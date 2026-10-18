@@ -105,7 +105,7 @@ import { CardTecnologiaComponent } from '../../shared/card-tecnologia/card-tecno
             <h2 class="section-title">Navegue por Categoria</h2>
             <p class="section-subtitle">Explore a base de conhecimento organizada por áreas de especialidade técnica</p>
           </div>
-          <a routerLink="/categorias" class="link-more">Todas as 6 categorias →</a>
+          <a routerLink="/categorias" class="link-more">Todas as {{ categorias.length }} categorias →</a>
         </div>
 
         <div class="cat-grid">
