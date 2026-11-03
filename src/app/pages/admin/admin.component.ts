@@ -745,6 +745,7 @@ export class AdminComponent implements OnInit {
 
   sair() {
     this.authService.logout();
+    void this.router.navigate(['/']);
   }
 
   // Getters para títulos e rótulos

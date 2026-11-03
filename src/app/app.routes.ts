@@ -3,6 +3,12 @@ import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    title: 'DevResumos · Início',
+    loadComponent: () =>
+      import('./pages/home/home.component').then((m) => m.HomeComponent),
+  },
+  {
     path: 'categorias',
     title: 'DevResumos · Categorias',
     loadComponent: () =>
@@ -53,5 +59,5 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin/admin.component').then((m) => m.AdminComponent),
   },
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: '' },
 ];

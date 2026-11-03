@@ -113,6 +113,6 @@ export class CabecalhoComponent {
   sair(): void {
     this.auth.logout();
     this.fecharMenuMobile();
-    void this.router.navigate(['/login']);
+    void this.router.navigate(['/']);
   }
 }
