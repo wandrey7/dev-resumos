@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { Usuario } from '../models/models';
 import { DadosService } from './dados.service';
 
@@ -177,8 +179,8 @@ export class AuthService {
 
   private async criarCredencial(senha: string): Promise<Credencial> {
     const cryptoApi = globalThis.crypto;
-    if (!cryptoApi?.subtle) {
-      throw new Error('Este navegador não oferece suporte à validação segura de senha.');
+    if (!cryptoApi?.getRandomValues) {
+      throw new Error('Este navegador não permite gerar uma chave aleatória segura para a senha.');
     }
 
     const salt = cryptoApi.getRandomValues(new Uint8Array(16));
@@ -202,24 +204,8 @@ export class AuthService {
   }
 
   private async gerarHash(senha: string, salt: Uint8Array): Promise<string> {
-    const cryptoApi = globalThis.crypto;
-    if (!cryptoApi?.subtle) {
-      throw new Error('Este navegador não oferece suporte à validação segura de senha.');
-    }
-
-    const material = await cryptoApi.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(senha),
-      'PBKDF2',
-      false,
-      ['deriveBits']
-    );
-    const hash = await cryptoApi.subtle.deriveBits(
-      { name: 'PBKDF2', salt, iterations: 310000, hash: 'SHA-256' },
-      material,
-      256
-    );
-    return this.bytesParaHex(new Uint8Array(hash));
+    const hash = await pbkdf2Async(sha256, senha, salt, { c: 310000, dkLen: 32 });
+    return this.bytesParaHex(hash);
   }
 
   private bytesParaHex(bytes: Uint8Array): string {

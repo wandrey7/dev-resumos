@@ -6,7 +6,7 @@ import { DadosService } from '../../core/services/dados.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Categoria, Tecnologia, Conteudo, ExemploCodigo, Usuario } from '../../core/models/models';
 
-type SecaoAdmin = 'usuarios' | 'tecnologias' | 'categorias' | 'conteudos' | 'exemplos';
+type SecaoAdmin = 'inicio' | 'usuarios' | 'tecnologias' | 'categorias' | 'conteudos' | 'exemplos';
 type TipoItemAdmin = 'tecnologia' | 'categoria' | 'conteudo' | 'exemplo' | 'usuario';
 
 @Component({
@@ -26,6 +26,16 @@ type TipoItemAdmin = 'tecnologia' | 'categoria' | 'conteudo' | 'exemplo' | 'usua
         </div>
 
         <nav class="admin-nav" aria-label="Menu administrativo">
+          <button
+            type="button"
+            class="admin-nav-item"
+            [class.active]="secaoAtiva === 'inicio'"
+            (click)="mudarSecao('inicio')"
+          >
+            <span class="nav-icon">📊</span>
+            <span>Visão geral</span>
+          </button>
+
           <button
             type="button"
             class="admin-nav-item"
@@ -113,8 +123,116 @@ type TipoItemAdmin = 'tecnologia' | 'categoria' | 'conteudo' | 'exemplo' | 'usua
           <button type="button" class="toast-close" (click)="mensagemErro = ''" aria-label="Fechar mensagem">✕</button>
         </div>
 
+        <section *ngIf="secaoAtiva === 'inicio'" class="admin-dashboard">
+          <header class="admin-dashboard-welcome">
+            <div>
+              <span class="admin-dashboard-eyebrow">CENTRAL DE CONTROLE</span>
+              <h1 class="admin-title">Olá, {{ authService.usuarioAtual?.nome }} 👋</h1>
+              <p class="admin-subtitle">Acompanhe o conteúdo e gerencie as principais áreas do DevResumos.</p>
+            </div>
+            <span class="admin-dashboard-date">{{ dataAtual | date:'longDate' }}</span>
+          </header>
+
+          <div class="admin-dashboard-stats" aria-label="Resumo do sistema">
+            <article class="admin-stat-card">
+              <span class="admin-stat-icon">💻</span>
+              <span class="admin-stat-label">Tecnologias</span>
+              <strong class="admin-stat-value">{{ tecnologias.length }}</strong>
+              <span class="admin-stat-caption">itens cadastrados</span>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-icon">📁</span>
+              <span class="admin-stat-label">Categorias</span>
+              <strong class="admin-stat-value">{{ categorias.length }}</strong>
+              <span class="admin-stat-caption">áreas de conteúdo</span>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-icon">📄</span>
+              <span class="admin-stat-label">Conteúdos</span>
+              <strong class="admin-stat-value">{{ conteudos.length }}</strong>
+              <span class="admin-stat-caption">resumos publicados</span>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-icon">👥</span>
+              <span class="admin-stat-label">Usuários</span>
+              <strong class="admin-stat-value">{{ usuarios.length }}</strong>
+              <span class="admin-stat-caption">{{ totalAdministradores }} administradores</span>
+            </article>
+          </div>
+
+          <div class="admin-dashboard-grid">
+            <section class="admin-dashboard-panel">
+              <div class="admin-dashboard-panel-heading">
+                <div>
+                  <h2>Gerenciar sistema</h2>
+                  <p>Acesse uma área para adicionar, editar ou remover registros.</p>
+                </div>
+              </div>
+              <div class="admin-quick-actions">
+                <button type="button" class="admin-quick-action" (click)="mudarSecao('tecnologias')">
+                  <span class="quick-action-icon">💻</span>
+                  <span><strong>Tecnologias</strong><small>Organize linguagens e ferramentas</small></span>
+                  <span class="quick-action-arrow">→</span>
+                </button>
+                <button type="button" class="admin-quick-action" (click)="mudarSecao('conteudos')">
+                  <span class="quick-action-icon">📄</span>
+                  <span><strong>Conteúdos</strong><small>Atualize resumos e assuntos</small></span>
+                  <span class="quick-action-arrow">→</span>
+                </button>
+                <button type="button" class="admin-quick-action" (click)="mudarSecao('exemplos')">
+                  <span class="quick-action-icon">⚡</span>
+                  <span><strong>Exemplos de código</strong><small>Mantenha exemplos práticos</small></span>
+                  <span class="quick-action-arrow">→</span>
+                </button>
+                <button type="button" class="admin-quick-action" (click)="mudarSecao('usuarios')">
+                  <span class="quick-action-icon">👥</span>
+                  <span><strong>Usuários e permissões</strong><small>Gerencie contas e administradores</small></span>
+                  <span class="quick-action-arrow">→</span>
+                </button>
+                <button type="button" class="admin-quick-action" (click)="mudarSecao('categorias')">
+                  <span class="quick-action-icon">📁</span>
+                  <span><strong>Categorias</strong><small>Agrupe os assuntos do sistema</small></span>
+                  <span class="quick-action-arrow">→</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="admin-dashboard-panel admin-dashboard-recent">
+              <div class="admin-dashboard-panel-heading">
+                <div>
+                  <h2>Contas cadastradas</h2>
+                  <p>Visão rápida das contas mais recentes na lista.</p>
+                </div>
+                <button type="button" class="admin-text-button" (click)="mudarSecao('usuarios')">Ver usuários</button>
+              </div>
+              <div *ngIf="usuarios.length; else semUsuarios" class="admin-recent-users">
+                <div *ngFor="let usuario of usuarios.slice(-5).reverse()" class="admin-recent-user">
+                  <span class="admin-recent-avatar">{{ usuario.nome.substring(0, 1) | uppercase }}</span>
+                  <span class="admin-recent-user-info">
+                    <strong>{{ usuario.nome }}</strong>
+                    <small>{{ usuario.email }}</small>
+                  </span>
+                  <span class="badge-role" [class.badge-admin]="usuario.perfil === 'admin'">
+                    {{ usuario.perfil === 'admin' ? 'Admin' : 'Usuário' }}
+                  </span>
+                </div>
+              </div>
+              <ng-template #semUsuarios>
+                <p class="admin-dashboard-empty">Ainda não há contas cadastradas.</p>
+              </ng-template>
+              <div class="admin-dashboard-content-note">
+                <span class="admin-stat-icon">🧩</span>
+                <span><strong>{{ exemplos.length }} exemplos de código</strong><small>associados aos conteúdos do sistema</small></span>
+              </div>
+            </section>
+          </div>
+          <p class="admin-dashboard-local-note">
+            Os dados são armazenados neste navegador e não são sincronizados com outros dispositivos.
+          </p>
+        </section>
+
         <!-- Cabeçalho da Seção Atual -->
-        <header class="admin-section-header">
+        <header *ngIf="secaoAtiva !== 'inicio'" class="admin-section-header">
           <div>
             <h1 class="admin-title">
               {{ tituloSecao }}
@@ -131,7 +249,7 @@ type TipoItemAdmin = 'tecnologia' | 'categoria' | 'conteudo' | 'exemplo' | 'usua
         </header>
 
         <!-- Barra de Busca da Tabela -->
-        <div class="admin-toolbar">
+        <div *ngIf="secaoAtiva !== 'inicio'" class="admin-toolbar">
           <div class="admin-search-wrapper">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
@@ -531,7 +649,8 @@ type TipoItemAdmin = 'tecnologia' | 'categoria' | 'conteudo' | 'exemplo' | 'usua
   `
 })
 export class AdminComponent implements OnInit {
-  secaoAtiva: SecaoAdmin = 'tecnologias';
+  secaoAtiva: SecaoAdmin = 'inicio';
+  readonly dataAtual = new Date();
   filtroTabela = '';
   mensagemSucesso = '';
   mensagemErro = '';
@@ -605,13 +724,13 @@ export class AdminComponent implements OnInit {
     this.dadosService.usuarios$.subscribe(list => (this.usuarios = list));
     this.route.paramMap.subscribe(params => {
       const secao = params.get('secao');
-      const secoes: SecaoAdmin[] = ['usuarios', 'tecnologias', 'categorias', 'conteudos', 'exemplos'];
+      const secoes: SecaoAdmin[] = ['inicio', 'usuarios', 'tecnologias', 'categorias', 'conteudos', 'exemplos'];
       if (!secao) {
-        this.secaoAtiva = 'tecnologias';
+        this.secaoAtiva = 'inicio';
       } else if (secoes.includes(secao as SecaoAdmin)) {
         this.secaoAtiva = secao as SecaoAdmin;
       } else {
-        this.router.navigate(['/admin/tecnologias'], { replaceUrl: true });
+        this.router.navigate(['/admin/inicio'], { replaceUrl: true });
       }
       this.filtroTabela = '';
     });
@@ -631,6 +750,7 @@ export class AdminComponent implements OnInit {
   // Getters para títulos e rótulos
   get tituloSecao(): string {
     switch (this.secaoAtiva) {
+      case 'inicio': return 'Visão geral';
       case 'tecnologias': return 'Gerenciamento de Tecnologias';
       case 'categorias': return 'Gerenciamento de Categorias';
       case 'conteudos': return 'Gerenciamento de Conteúdos & Assuntos';
@@ -641,6 +761,7 @@ export class AdminComponent implements OnInit {
 
   get descricaoSecao(): string {
     switch (this.secaoAtiva) {
+      case 'inicio': return 'Resumo do conteúdo e das contas do sistema.';
       case 'tecnologias': return 'Cadastre, edite e vincule tecnologias às suas respectivas categorias.';
       case 'categorias': return 'Categorias temáticas que agrupam as linguagens e ferramentas.';
       case 'conteudos': return 'Tópicos detalhados exibidos no sumário da tela de cada tecnologia.';
@@ -651,6 +772,7 @@ export class AdminComponent implements OnInit {
 
   get rotuloItemSingular(): string {
     switch (this.secaoAtiva) {
+      case 'inicio': return 'item';
       case 'tecnologias': return 'Tecnologia';
       case 'categorias': return 'Categoria';
       case 'conteudos': return 'Conteúdo';
@@ -661,6 +783,7 @@ export class AdminComponent implements OnInit {
 
   get rotuloItemPlural(): string {
     switch (this.secaoAtiva) {
+      case 'inicio': return 'Itens';
       case 'tecnologias': return 'Tecnologias';
       case 'categorias': return 'Categorias';
       case 'conteudos': return 'Conteúdos';
@@ -719,12 +842,17 @@ export class AdminComponent implements OnInit {
 
   get totalItensFiltrados(): number {
     switch (this.secaoAtiva) {
+      case 'inicio': return 0;
       case 'tecnologias': return this.tecnologiasFiltradas.length;
       case 'categorias': return this.categoriasFiltradas.length;
       case 'conteudos': return this.conteudosFiltrados.length;
       case 'exemplos': return this.exemplosFiltrados.length;
       case 'usuarios': return this.usuariosFiltrados.length;
     }
+  }
+
+  get totalAdministradores(): number {
+    return this.usuarios.filter(usuario => usuario.perfil === 'admin').length;
   }
 
   obterNomeTecnologia(tecnologiaId: string): string {

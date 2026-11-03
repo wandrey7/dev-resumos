@@ -1,0 +1,339 @@
+DOCUMENTACAO DO SISTEMA DEVRESUMOS
+==================================
+
+1. OBJETIVO DO SISTEMA
+----------------------
+
+O DevResumos e uma aplicacao web para consultar resumos tecnicos, tecnologias,
+categorias, assuntos e exemplos de codigo. O visitante pode navegar pelo conteudo
+ou pesquisar termos em nomes de tecnologias, textos, titulos de assuntos e
+exemplos. A aplicacao tambem inclui cadastro e login locais e um painel
+administrativo para gerenciar os dados apresentados no site.
+
+Esta documentacao descreve o funcionamento implementado no projeto. Ela nao
+pressupoe recursos que ainda nao existem, como uma API de servidor, banco de
+dados remoto, envio de e-mail ou sincronizacao entre dispositivos.
+
+
+2. TECNOLOGIAS UTILIZADAS E POR QUE SAO USADAS
+----------------------------------------------
+
+ANGULAR 19
+Framework principal da interface. Organiza o sistema em componentes, injecao de
+dependencias, servicos, formularios e rotas. Os componentes standalone usados
+neste projeto permitem declarar diretamente as dependencias de cada pagina sem
+precisar criar um NgModule para cada conjunto de telas.
+
+TypeScript
+Linguagem usada no codigo da aplicacao. Acrescenta tipos e interfaces ao
+JavaScript, como Usuario, Categoria, Tecnologia, Conteudo e ExemploCodigo.
+Isso facilita compreender o formato dos dados e encontrar erros durante a
+checagem e a compilacao.
+
+RxJS
+Biblioteca de fluxos reativos usada pelo Angular. O DadosService utiliza
+BehaviorSubject para manter as listas atuais e Observable para informar as
+paginas quando os dados mudam. Assim, por exemplo, uma alteracao feita no painel
+pode atualizar as listas que dependem dos mesmos dados enquanto a aplicacao esta
+aberta.
+
+Angular Router
+Controla a navegacao sem recarregar a pagina inteira. Tambem permite carregar
+componentes sob demanda (lazy loading), associar titulos as rotas, utilizar
+parametros como o slug de uma tecnologia e proteger as rotas administrativas
+com um guard do lado do cliente.
+
+Angular Reactive Forms e FormsModule
+Os formularios de login, cadastro e administracao usam formularios reativos para
+validar campos e mostrar erros. Formularios de busca e filtros simples usam
+FormsModule com vinculacao ngModel. As validacoes incluem campos obrigatorios,
+formato de e-mail, tamanho minimo da senha e confirmacao de senha.
+
+Vite e @analogjs/vite-plugin-angular
+Vite inicia o servidor de desenvolvimento e empacota a aplicacao para producao.
+O plugin integra a compilacao Angular ao fluxo do Vite. O projeto tambem contem
+configuracao do Angular CLI; os comandos disponiveis estao descritos na secao 8.
+
+CSS
+O arquivo src/styles.css define os estilos globais, o tema visual e os layouts
+responsivos. Os componentes compartilham esse sistema de estilos para manter
+cores, espacamentos, formularios, tabelas, painel e telas publicas consistentes.
+
+Zone.js
+Integrado no ponto de entrada da aplicacao. Ajuda o Angular a perceber eventos
+asincronos e atualizar a interface quando o estado muda.
+
+@noble/hashes (PBKDF2 e SHA-256)
+Usado pelo servico de autenticacao para derivar um hash da senha com PBKDF2,
+SHA-256, salt aleatorio de 16 bytes e 310.000 iteracoes. A biblioteca evita
+depender de crypto.subtle para o calculo do hash em navegadores que nao oferecem
+essa API. O navegador ainda precisa oferecer crypto.getRandomValues para gerar
+o salt seguro. O hash nao e criptografia reversivel: nao e possivel recuperar a
+senha original a partir dele.
+
+Dependencias adicionais
+O package.json inclui tambem dependencias como React, Express, @google/genai,
+Motion, Tailwind e dotenv. No codigo atual em src nao foram encontrados imports
+dessas bibliotecas; elas nao fazem parte dos fluxos descritos acima. Sua
+presenca no arquivo de dependencias, por si so, nao significa que o sistema
+tenha um servidor Express, uma interface React, IA ou envio de dados para esses
+servicos.
+
+
+3. ORGANIZACAO DO CODIGO
+------------------------
+
+src/main.ts
+Ponto de entrada. Carrega Zone.js, estilos globais e inicializa a aplicacao
+Angular com AppComponent e appConfig.
+
+src/app/app.component.ts
+Componente raiz que exibe o cabecalho e o rodape nas paginas publicas. Eles sao
+ocultados quando a rota atual comeca com /admin, para que o painel tenha seu
+proprio layout.
+
+src/app/app.routes.ts
+Define as rotas publicas e administrativas, seus titulos e os componentes que
+serao carregados.
+
+src/app/core/models/models.ts
+Define as interfaces dos dados principais: Usuario, Categoria, Tecnologia,
+Conteudo, ExemploCodigo e ResultadoPesquisa.
+
+src/app/core/services/dados.service.ts
+Mantem as listas usadas pela aplicacao, fornece consultas e pesquisa, e executa
+operacoes de criacao, leitura, atualizacao e exclusao (CRUD). Carrega os dados
+iniciais e restaura dados persistidos no armazenamento local do navegador.
+
+src/app/core/services/auth.service.ts
+Executa o cadastro, login, logout, verificacao de senha, gerenciamento de
+sessao e criacao de hashes de senha.
+
+src/app/core/guards/admin.guard.ts
+Verifica se ha uma sessao local e se o usuario atual tem o perfil admin antes de
+permitir a navegacao para as rotas /admin.
+
+src/app/pages/
+Contem as paginas de inicio, categorias, tecnologia, pesquisa, login, cadastro,
+recuperacao de senha e painel administrativo.
+
+src/app/shared/
+Contem componentes compartilhados, como cabecalho, rodape, cards de categoria e
+tecnologia e bloco de codigo com acao de copiar.
+
+
+4. MODELO E RELACIONAMENTO DOS DADOS
+------------------------------------
+
+Categoria
+Agrupa tecnologias por tema. Possui nome, slug, descricao e outros campos
+opcionais de exibicao.
+
+Tecnologia
+Pertence a uma categoria por meio de categoriaId. Possui nome, slug, descricao,
+indicadores de popularidade e novidade, resumo e versao.
+
+Conteudo (assunto)
+Pertence a uma tecnologia por meio de tecnologiaId. Possui titulo, slug, texto
+explicativo e ordem de exibicao.
+
+ExemploCodigo
+Pertence a um conteudo por meio de conteudoId. Possui titulo, linguagem, codigo
+e explicacao opcional.
+
+Usuario
+Possui nome, e-mail, perfil (usuario ou admin) e data de criacao. A credencial
+de senha e mantida separadamente das listas de usuarios.
+
+Relacionamento principal:
+Categoria -> varias Tecnologias -> varios Conteudos -> varios Exemplos de Codigo
+
+Ao excluir uma tecnologia, o servico tambem remove seus conteudos e exemplos.
+Ao excluir um conteudo, remove os exemplos associados. Uma categoria que ainda
+tenha tecnologias vinculadas nao pode ser excluida. O painel tambem bloqueia a
+remocao ou rebaixamento do ultimo administrador conhecido por suas validacoes
+de interface.
+
+
+5. FLUXO DE USO DO VISITANTE
+----------------------------
+
+1. A aplicacao inicia em src/main.ts e carrega o componente raiz.
+2. O roteador escolhe a pagina de acordo com o endereco acessado.
+3. O DadosService inicia as listas com dados de demonstracao e, quando existem
+   dados validos salvos no navegador, restaura essas listas.
+4. Na pagina inicial, o visitante ve tecnologias populares e recentes,
+   categorias em destaque e o campo principal de pesquisa.
+5. Ao abrir /categorias, ve a lista de categorias. Ao escolher uma categoria,
+   a rota /categorias/:slug apresenta as tecnologias associadas.
+6. Ao escolher uma tecnologia, a rota /tecnologia/:slug apresenta resumo,
+   assuntos organizados e exemplos de codigo. Os links de assunto podem levar
+   diretamente a secoes da pagina.
+7. O componente compartilhado de bloco de codigo oferece uma acao para copiar o
+   exemplo para a area de transferencia.
+8. A busca da pagina inicial leva a /pesquisa com o termo na query string q.
+   A pagina de pesquisa pede pelo menos dois caracteres e organiza os resultados
+   em tecnologia, assunto e topicos. A comparacao ignora diferencas entre letras
+   maiusculas/minusculas e acentos e considera nomes, textos, exemplos e codigo.
+
+
+6. FLUXO DE CADASTRO, LOGIN E SENHA
+-----------------------------------
+
+Cadastro:
+1. O visitante abre /cadastro e preenche nome, e-mail, senha e confirmacao.
+2. O formulario valida os campos, incluindo senha com pelo menos 8 caracteres
+   e confirmacao igual a senha.
+3. O AuthService normaliza o e-mail removendo espacos externos e convertendo-o
+   para minusculas. Se ja houver uma conta com esse e-mail, o cadastro e
+   recusado.
+4. E gerado um salt aleatorio. O hash PBKDF2-SHA-256 e calculado para a senha.
+5. O DadosService grava os dados da conta e o AuthService grava a credencial
+   separadamente. O usuario recebe o perfil comum (usuario).
+6. O novo usuario e autenticado na sessao local e redirecionado para a pagina
+   inicial.
+
+Login:
+1. O visitante informa e-mail e senha em /login.
+2. O e-mail e normalizado e comparado com os usuarios armazenados.
+3. A senha informada e processada usando o salt salvo, e o hash resultante e
+   comparado com a credencial armazenada.
+4. Se os dados forem validos, a sessao e carregada no estado da aplicacao e no
+   armazenamento local. Usuarios comuns seguem para a pagina inicial;
+   administradores seguem para /admin.
+5. Ao reiniciar a aplicacao no mesmo navegador, a sessao local pode ser
+   restaurada.
+
+Compatibilidade de contas antigas:
+Contas demonstrativas ou contas de versoes anteriores podem nao possuir uma
+credencial PBKDF2. O fluxo de login contem um caminho legado para permitir o
+primeiro acesso com a senha antiga e, em seguida, registrar uma credencial
+hash. Este mecanismo e uma compatibilidade do projeto atual, nao um modelo
+adequado para autenticacao de producao.
+
+Recuperacao de senha:
+A pagina /recuperar-senha valida o formato do e-mail e apresenta uma mensagem
+generica simulando o envio das instrucoes. Atualmente nao existe envio real de
+e-mail nem redefinicao efetiva da credencial. A tela informa que as instrucoes
+seriam enviadas, mas a funcionalidade precisa de um backend para ser real.
+
+
+7. FLUXO DO PAINEL ADMINISTRATIVO
+--------------------------------
+
+1. O administrador faz login com uma conta cujo perfil seja admin.
+2. Ao acessar /admin, o adminGuard confere a sessao e o perfil no cliente.
+   Usuario sem sessao e enviado ao login; usuario comum e enviado para a pagina
+   inicial.
+3. A pagina inicial do painel mostra contadores e atalhos para tecnologias,
+   categorias, conteudos, exemplos de codigo e usuarios.
+4. O administrador seleciona uma secao, filtra registros e usa o formulario
+   para criar ou editar.
+5. Os formularios validam os campos necessarios. A secao de usuarios permite
+   escolher o perfil usuario ou admin; novas contas criadas pelo painel
+   tambem recebem uma senha inicial, processada pelo AuthService.
+6. O DadosService atualiza a lista em memoria, persiste o resultado no
+   localStorage e emite o novo valor pelo Observable correspondente.
+7. As paginas inscritas nessas listas reagem as mudancas enquanto a aplicacao
+   esta aberta.
+8. Ao excluir registros, o painel pede confirmacao e informa os efeitos em
+   registros associados. Exclusoes em cascata removem assuntos e exemplos
+   associados a uma tecnologia, ou exemplos ligados a um assunto.
+9. O botao de sair limpa a sessao atual e leva para /login.
+
+
+8. EXECUCAO E VERIFICACAO
+-------------------------
+
+Requisitos:
+- Node.js e npm instalados.
+- Acesso a internet para instalar dependencias na primeira vez.
+
+Instalar dependencias:
+  npm install
+
+Executar o modo de desenvolvimento usado no README:
+  npm run dev
+
+O servidor Vite inicia na porta 3000. No mesmo computador, abrir:
+  http://localhost:3000
+
+Checar tipos TypeScript:
+  npm run lint
+
+Gerar a compilacao de producao:
+  npm run build
+
+O package.json tambem disponibiliza os comandos ng e build:ng para o Angular
+CLI. A configuracao do Vite esta em vite.config.ts e a configuracao do Angular
+CLI esta em angular.json.
+
+
+9. ARMAZENAMENTO E LIMITACOES IMPORTANTES
+-----------------------------------------
+
+O projeto atual nao possui servidor de autenticacao nem banco de dados remoto.
+As categorias, tecnologias, conteudos, exemplos e usuarios sao armazenados
+localmente no navegador usando localStorage. As chaves principais sao:
+
+- devresumos_categorias
+- devresumos_tecnologias
+- devresumos_conteudos
+- devresumos_exemplos
+- devresumos_usuarios
+- devresumos_credentials
+- devresumos_user
+
+Consequencias:
+- Os dados nao sao sincronizados entre navegadores, perfis ou dispositivos.
+- Limpar os dados do site pode remover contas e alteracoes feitas naquele
+  navegador.
+- Uma alteracao feita no painel de um navegador nao atualiza automaticamente
+  uma versao publicada ou o navegador de outra pessoa.
+- O adminGuard e validacao no cliente, nao uma barreira de seguranca no servidor.
+  Em uma aplicacao sem backend, nao se deve confiar nessa protecao para dados
+  sensiveis.
+- O hash da senha e melhor do que guardar a senha em texto puro, mas armazenar
+  usuarios, papeis e credenciais exclusivamente no navegador nao equivale a um
+  sistema de autenticacao seguro. Um cliente pode inspecionar e alterar dados
+  locais.
+- O fluxo legado de senha de demonstracao existe para compatibilidade; antes de
+  usar o projeto com contas reais, e necessario substituir esse modelo por uma
+  autenticacao no servidor.
+- A recuperacao de senha e apenas uma simulacao e nao envia mensagens.
+
+Para uso real em producao, o proximo passo arquitetural e criar uma API com
+autenticacao no servidor, banco de dados, validacao de autorizacao em cada
+operacao, recuperacao de senha por canal verificado e estrategia de migracao
+das contas locais. Segredos e regras de acesso nao devem depender apenas do
+codigo executado no navegador.
+
+
+10. RESUMO DO FLUXO GERAL
+-------------------------
+
+Visitante
+  -> pagina inicial
+  -> categorias ou pesquisa
+  -> tecnologia
+  -> assuntos e exemplos de codigo
+
+Visitante que cria conta
+  -> formulario de cadastro
+  -> validacao dos campos
+  -> hash local da senha
+  -> gravacao no navegador
+  -> sessao autenticada
+  -> pagina inicial
+
+Administrador
+  -> login
+  -> verificacao local do perfil
+  -> visao geral do painel
+  -> CRUD de categorias, tecnologias, conteudos, exemplos e usuarios
+  -> atualizacao dos dados observados pela interface
+  -> persistencia no navegador
+
+Importante: "gravacao no navegador" significa apenas no armazenamento local
+daquele navegador. No estado atual, nao existe sincronizacao com Git, servidor
+remoto ou banco de dados central.

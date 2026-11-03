@@ -36,7 +36,7 @@ Não é necessário configurar uma chave `GEMINI_API_KEY` para executar o projet
    - **E-mail:** `admin@devresumos.com.br`
    - **Senha de demonstração:** `password123`
 
-3. Clique em **Entrar**. A conta abre o painel automaticamente. Também é possível acessar diretamente [http://localhost:3000/admin](http://localhost:3000/admin) depois de entrar.
+3. Clique em **Entrar**. A conta abre o painel automaticamente. Também é possível acessar diretamente [http://localhost:3000/admin](http://localhost:3000/admin) depois de entrar. A página inicial do painel mostra um resumo de tecnologias, categorias, conteúdos e usuários, com atalhos para gerenciar cada área.
 
 O painel tem as seções **Usuários**, **Tecnologias**, **Categorias**, **Conteúdos** e **Exemplos de Código**. Use **Sair do Painel** para encerrar a sessão.
 
@@ -46,7 +46,7 @@ O usuário de demonstração `jorvane@devresumos.com.br` também está disponív
 
 ### Observação sobre o login de demonstração
 
-O login verifica o e-mail e a senha da conta. Contas criadas pelo cadastro usam a senha definida no formulário; a senha inicial de novos usuários criados pelo painel também é solicitada. Para compatibilidade com os dados de demonstração e usuários criados por versões anteriores, contas locais sem credencial registrada usam a senha legada `password123` no primeiro acesso válido. As credenciais são armazenadas no navegador como hashes PBKDF2 com salt, e não como senha em texto simples.
+O login verifica o e-mail e a senha da conta. Contas criadas pelo cadastro usam a senha definida no formulário; a senha inicial de novos usuários criados pelo painel também é solicitada. Para compatibilidade com os dados de demonstração e usuários criados por versões anteriores, contas locais sem credencial registrada usam a senha legada `password123` no primeiro acesso válido. As credenciais são armazenadas no navegador como hashes PBKDF2-SHA-256 com salt, e não como senha em texto simples. O cálculo do hash também funciona em navegadores nos quais a API `crypto.subtle` não está disponível.
 
 Este projeto ainda não tem um servidor de autenticação: contas, perfil e hashes ficam no armazenamento local do navegador e não são compartilhados entre navegadores ou dispositivos. A proteção de `/admin` também é apenas do lado do cliente e **não é adequada para proteger dados em produção**. Um sistema publicado precisa validar identidade e permissões no servidor.
 
