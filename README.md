@@ -12,13 +12,17 @@ ng serve
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Admin panel
+## Acesso administrativo de demonstração
 
-Sign up with an email address containing `admin` to receive the administrator
-profile, then open `/admin` to manage technologies, categories, content, code
-examples, and users. Authentication and application data are stored locally in
-the browser; this prototype does not provide server-side authorization and is
-not suitable for protecting production data.
+Use `/login` com:
+
+- **E-mail:** `admin@devresumos.com.br`
+- **Senha:** `password123`
+
+A conta é criada automaticamente no armazenamento local do navegador no
+primeiro login. Categorias, tecnologias e demais dados também são locais e não
+são sincronizados entre dispositivos. Esse acesso é apenas para demonstração;
+não use essas credenciais nem a autenticação local para proteger dados reais.
 
 ## Code scaffolding
 

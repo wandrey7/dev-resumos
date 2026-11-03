@@ -44,14 +44,14 @@ describe('AuthService', () => {
   });
 
   it('e-mail com "admin" vira administrador', async () => {
-    await auth.cadastrar('Admin Dev', 'admin@devresumos.com.br', 'senha1234');
-    await auth.login('admin@devresumos.com.br', 'senha1234');
+    await auth.cadastrar('Admin Dev', 'admin-pessoal@exemplo.com', 'senha1234');
+    await auth.login('admin-pessoal@exemplo.com', 'senha1234');
     expect(auth.ehAdmin).toBe(true);
   });
 
   it('administra usuários sem armazenar a senha em texto puro', async () => {
-    await auth.cadastrar('Admin Dev', 'admin@devresumos.com.br', 'senha1234');
-    await auth.login('admin@devresumos.com.br', 'senha1234');
+    await auth.cadastrar('Admin Dev', 'admin-pessoal@exemplo.com', 'senha1234');
+    await auth.login('admin-pessoal@exemplo.com', 'senha1234');
 
     const usuario = await auth.salvarUsuario({
       nome: 'Ana Souza',
@@ -65,8 +65,34 @@ describe('AuthService', () => {
     expect(await auth.login('ana@exemplo.com', 'senha5678')).toBe(true);
   });
 
+  it('permite entrar com a conta administrativa de demonstração', async () => {
+    expect(await auth.login('admin@devresumos.com.br', 'password123')).toBe(true);
+    expect(auth.usuarioAtual()?.perfil).toBe('admin');
+    expect(auth.getUsuarios().some((usuario) => usuario.email === 'admin@devresumos.com.br')).toBe(true);
+  });
+
+  it('migra a conta administrativa antiga sem manter a senha em texto puro', async () => {
+    localStorage.setItem(
+      'devresumos_usuarios',
+      JSON.stringify([
+        {
+          id: 'usr-admin-demo',
+          nome: 'Administrador DevResumos',
+          email: 'admin@devresumos.com.br',
+          perfil: 'admin',
+          criadoEm: '2026-01-01',
+          senha: 'senha-legada',
+        },
+      ]),
+    );
+
+    expect(await auth.login('admin@devresumos.com.br', 'password123')).toBe(true);
+    expect(localStorage.getItem('devresumos_usuarios')).not.toContain('senha-legada');
+  });
+
   it('impede remover o último administrador', async () => {
-    await auth.cadastrar('Admin Dev', 'admin@devresumos.com.br', 'senha1234');
+    await auth.login('admin@devresumos.com.br', 'password123');
+    auth.logout();
     const [admin] = auth.getUsuarios();
 
     expect(() => auth.excluirUsuario(admin.id)).toThrow('único administrador');

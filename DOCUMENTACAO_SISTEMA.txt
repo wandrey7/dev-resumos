@@ -1,0 +1,29 @@
+DEVRESUMOS - ACESSO E CATEGORIAS
+================================
+
+ACESSO ADMINISTRATIVO DE DEMONSTRACAO
+-------------------------------------
+Abra /login e utilize:
+
+E-mail: admin@devresumos.com.br
+Senha:  password123
+
+A conta administrativa e criada no armazenamento local do navegador no
+primeiro login. Depois de entrar, abra /admin para gerenciar categorias,
+tecnologias, conteudos, exemplos de codigo e usuarios.
+
+O acesso e exclusivamente demonstrativo. O projeto nao possui servidor de
+autenticacao: credenciais, sessao e dados ficam no navegador atual. Nao utilize
+essa conta ou a protecao local para dados reais ou em producao.
+
+CATEGORIAS
+----------
+A opcao Categorias no cabecalho abre /categorias e lista as categorias
+disponiveis. Ao selecionar uma categoria, /categorias/<slug> mostra as
+tecnologias associadas. Cada tecnologia pode ser pesquisada pela pagina
+/pesquisa.
+
+Administradores podem criar, editar e excluir categorias no painel /admin.
+Uma categoria vinculada a tecnologias nao pode ser excluida; primeiro altere
+ou remova os vinculos das tecnologias. As alteracoes ficam salvas no
+localStorage deste navegador.

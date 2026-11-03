@@ -4,6 +4,7 @@ import { Usuario } from '../models/models';
 interface UsuarioRegistro extends Usuario {
   senhaHash: string;
   senhaSalt: string;
+  senha?: string;
 }
 
 export interface ResultadoCadastro {
@@ -16,6 +17,8 @@ const CHAVE_USUARIOS = 'devresumos_usuarios';
 const CHAVE_SESSAO = 'devresumos_sessao';
 const DURACAO_SESSAO_MS = 8 * 60 * 60 * 1000; // 8h (RF03)
 const ITERACOES_PBKDF2 = 100_000;
+const EMAIL_ADMIN_DEMO = 'admin@devresumos.com.br';
+const SENHA_ADMIN_DEMO = 'password123';
 
 /**
  * Auth simulada para o protótipo (front-end apenas): "base de usuários" e sessão
@@ -48,6 +51,7 @@ export class AuthService {
   async salvarUsuario(
     dados: Partial<Usuario> & { senha?: string },
   ): Promise<Usuario> {
+    await this.garantirContaAdminDemo();
     const nome = dados.nome?.trim() ?? '';
     const email = dados.email?.trim().toLowerCase() ?? '';
     const senha = dados.senha ?? '';
@@ -120,6 +124,7 @@ export class AuthService {
 
   /** Validação "de servidor" simulada + grava usuário com senha hasheada. */
   async cadastrar(nome: string, email: string, senha: string): Promise<ResultadoCadastro> {
+    await this.garantirContaAdminDemo();
     const nomeLimpo = nome.trim();
     const emailLimpo = email.trim().toLowerCase();
 
@@ -153,6 +158,7 @@ export class AuthService {
   }
 
   async login(email: string, senha: string): Promise<boolean> {
+    await this.garantirContaAdminDemo();
     const emailLimpo = email.trim().toLowerCase();
     const registro = this.lerUsuarios().find((u) => u.email === emailLimpo);
     if (!registro) return false;
@@ -216,6 +222,32 @@ export class AuthService {
 
   private salvarUsuarios(usuarios: UsuarioRegistro[]): void {
     this.gravar(CHAVE_USUARIOS, JSON.stringify(usuarios));
+  }
+
+  private async garantirContaAdminDemo(): Promise<void> {
+    const usuarios = this.lerUsuarios();
+    const indiceExistente = usuarios.findIndex((usuario) => usuario.email === EMAIL_ADMIN_DEMO);
+    const existente = indiceExistente >= 0 ? usuarios[indiceExistente] : undefined;
+    if (existente?.senhaHash && existente.senhaSalt) return;
+
+    const salt = this.gerarSalt();
+    const { senha: _senhaLegada, ...dadosExistentes } = existente ?? {};
+    const contaDemo: UsuarioRegistro = {
+      ...dadosExistentes,
+      id: existente?.id ?? 'usr-admin-demo',
+      nome: existente?.nome ?? 'Administrador DevResumos',
+      email: EMAIL_ADMIN_DEMO,
+      perfil: 'admin',
+      criadoEm: existente?.criadoEm ?? new Date().toISOString(),
+      senhaSalt: this.paraHex(salt),
+      senhaHash: await this.derivarHash(SENHA_ADMIN_DEMO, salt),
+    };
+    if (indiceExistente >= 0) {
+      usuarios[indiceExistente] = contaDemo;
+    } else {
+      usuarios.push(contaDemo);
+    }
+    this.salvarUsuarios(usuarios);
   }
 
   private gerarSalt(): Uint8Array<ArrayBuffer> {

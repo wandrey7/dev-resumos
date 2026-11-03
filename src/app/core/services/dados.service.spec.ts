@@ -29,6 +29,9 @@ describe('DadosService', () => {
     expect(tecnologia.categoriaNome).toBe(categoria.nome);
     expect(dados.excluirCategoria(categoria.id)).toBe(false);
 
+    const restaurados = new DadosService();
+    expect(restaurados.getCategorias().some((item) => item.id === categoria.id)).toBe(true);
+
     dados.salvarCategoria({ id: categoria.id, nome: 'Sistemas' });
     expect(dados.getTecnologias().find((item) => item.id === tecnologia.id)?.categoriaNome).toBe('Sistemas');
   });

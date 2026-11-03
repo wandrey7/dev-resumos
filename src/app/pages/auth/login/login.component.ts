@@ -27,8 +27,9 @@ import { AuthService } from '../../../core/services/auth.service';
             <line x1="12" y1="8" x2="12.01" y2="8"></line>
           </svg>
           <div>
-            <strong>Protótipo:</strong> cadastre-se com um e-mail contendo <code>admin</code>
-            (ex.: <code>admin&#64;devresumos.com.br</code>) para acessar o painel administrativo.
+            <strong>Acesso de demonstração:</strong>
+            <code>admin&#64;devresumos.com.br</code> / <code>password123</code>.
+            Depois de entrar, abra o painel administrativo pelo menu.
           </div>
         </div>
 

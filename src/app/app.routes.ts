@@ -3,6 +3,18 @@ import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
+    path: 'categorias',
+    title: 'DevResumos · Categorias',
+    loadComponent: () =>
+      import('./pages/categorias/categorias.component').then((m) => m.CategoriasComponent),
+  },
+  {
+    path: 'categorias/:slug',
+    title: 'DevResumos · Categoria',
+    loadComponent: () =>
+      import('./pages/categorias/categorias.component').then((m) => m.CategoriasComponent),
+  },
+  {
     path: 'pesquisa',
     loadComponent: () =>
       import('./pages/pesquisa/pesquisa.component').then((m) => m.PesquisaComponent),
