@@ -1,7 +1,11 @@
 <div class="app-layout">
-  <app-cabecalho></app-cabecalho>
+  @if (!isAdminPage) {
+    <app-cabecalho></app-cabecalho>
+  }
   <main class="app-main-content">
     <router-outlet />
   </main>
-  <app-rodape></app-rodape>
+  @if (!isAdminPage) {
+    <app-rodape></app-rodape>
+  }
 </div>

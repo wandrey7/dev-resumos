@@ -49,6 +49,30 @@ describe('AuthService', () => {
     expect(auth.ehAdmin).toBe(true);
   });
 
+  it('administra usuários sem armazenar a senha em texto puro', async () => {
+    await auth.cadastrar('Admin Dev', 'admin@devresumos.com.br', 'senha1234');
+    await auth.login('admin@devresumos.com.br', 'senha1234');
+
+    const usuario = await auth.salvarUsuario({
+      nome: 'Ana Souza',
+      email: 'ana@exemplo.com',
+      perfil: 'usuario',
+      senha: 'senha5678',
+    });
+
+    expect(auth.getUsuarios()).toContainEqual(usuario);
+    expect(localStorage.getItem('devresumos_usuarios')).not.toContain('senha5678');
+    expect(await auth.login('ana@exemplo.com', 'senha5678')).toBe(true);
+  });
+
+  it('impede remover o último administrador', async () => {
+    await auth.cadastrar('Admin Dev', 'admin@devresumos.com.br', 'senha1234');
+    const [admin] = auth.getUsuarios();
+
+    expect(() => auth.excluirUsuario(admin.id)).toThrow('único administrador');
+    expect(auth.getUsuarios()).toContainEqual(admin);
+  });
+
   it('logout encerra a sessão', async () => {
     await auth.cadastrar('Ana Souza', 'ana@exemplo.com', 'senha1234');
     await auth.login('ana@exemplo.com', 'senha1234');

@@ -37,6 +37,87 @@ export class AuthService {
     return this._usuario()?.perfil === 'admin';
   }
 
+  get estaAutenticado(): boolean {
+    return this._usuario() !== null;
+  }
+
+  getUsuarios(): Usuario[] {
+    return this.lerUsuarios().map(({ senhaHash, senhaSalt, ...usuario }) => usuario);
+  }
+
+  async salvarUsuario(
+    dados: Partial<Usuario> & { senha?: string },
+  ): Promise<Usuario> {
+    const nome = dados.nome?.trim() ?? '';
+    const email = dados.email?.trim().toLowerCase() ?? '';
+    const senha = dados.senha ?? '';
+
+    if (nome.length < 3) throw new Error('O nome deve ter no mínimo 3 caracteres.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new Error('Informe um endereço de e-mail válido.');
+    }
+
+    const usuarios = this.lerUsuarios();
+    if (usuarios.some((usuario) => usuario.email === email && usuario.id !== dados.id)) {
+      throw new Error('Este e-mail já está cadastrado.');
+    }
+
+    const atual = dados.id ? usuarios.find((usuario) => usuario.id === dados.id) : undefined;
+    if (dados.id && !atual) throw new Error('O usuário selecionado não foi encontrado.');
+    if (!atual && senha.length < 8) {
+      throw new Error('A senha deve ter no mínimo 8 caracteres.');
+    }
+    if (senha && senha.length < 8) {
+      throw new Error('A senha deve ter no mínimo 8 caracteres.');
+    }
+
+    const usuario: UsuarioRegistro = {
+      ...atual,
+      id: atual?.id ?? `usr-${crypto.randomUUID()}`,
+      nome,
+      email,
+      perfil: dados.perfil === 'admin' ? 'admin' : 'usuario',
+      criadoEm: atual?.criadoEm ?? new Date().toISOString(),
+      senhaSalt: atual?.senhaSalt ?? '',
+      senhaHash: atual?.senhaHash ?? '',
+    };
+
+    if (senha) {
+      const salt = this.gerarSalt();
+      usuario.senhaSalt = this.paraHex(salt);
+      usuario.senhaHash = await this.derivarHash(senha, salt);
+    }
+
+    if (atual) {
+      usuarios[usuarios.indexOf(atual)] = usuario;
+    } else {
+      usuarios.push(usuario);
+    }
+    this.salvarUsuarios(usuarios);
+
+    const { senhaHash: _senhaHash, senhaSalt: _senhaSalt, ...usuarioPublico } = usuario;
+    if (this._usuario()?.id === usuario.id) this.iniciarSessao(usuarioPublico);
+    return usuarioPublico;
+  }
+
+  excluirUsuario(id: string): void {
+    if (this._usuario()?.id === id) {
+      throw new Error('Não é possível excluir o usuário conectado.');
+    }
+
+    const usuarios = this.lerUsuarios();
+    const usuario = usuarios.find((item) => item.id === id);
+    if (!usuario) throw new Error('O usuário selecionado não foi encontrado.');
+    if (
+      usuario.perfil === 'admin' &&
+      !usuarios.some((item) => item.id !== id && item.perfil === 'admin')
+    ) {
+      throw new Error('Não é possível excluir o único administrador cadastrado.');
+    }
+
+    this.salvarUsuarios(usuarios.filter((item) => item.id !== id));
+  }
+
   /** Validação "de servidor" simulada + grava usuário com senha hasheada. */
   async cadastrar(nome: string, email: string, senha: string): Promise<ResultadoCadastro> {
     const nomeLimpo = nome.trim();

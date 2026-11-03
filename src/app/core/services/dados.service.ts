@@ -1,21 +1,42 @@
 import { Injectable } from '@angular/core';
-import { Conteudo, ExemploCodigo, Tecnologia } from '../models/models';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { Categoria, Conteudo, ExemploCodigo, Tecnologia } from '../models/models';
 
-// ponytail: serviço MÍNIMO, só com dados de exemplo para a Tela de pesquisa funcionar.
-// Quando o DadosService completo do projeto for portado, ele substitui este arquivo —
-// a API pública (getTecnologias / getConteudos / getExemplos) foi mantida simples
-// para facilitar essa troca.
 @Injectable({ providedIn: 'root' })
 export class DadosService {
-  private readonly tecnologias: Tecnologia[] = [
+  private readonly categoriasSubject = new BehaviorSubject<Categoria[]>([
+    {
+      id: 'c-linguagens',
+      nome: 'Linguagens',
+      slug: 'linguagens',
+      descricao: 'Linguagens de programação e desenvolvimento.',
+      ordem: 1,
+    },
+    {
+      id: 'c-bancos',
+      nome: 'Bancos de Dados',
+      slug: 'bancos-de-dados',
+      descricao: 'Consulta e manipulação de dados.',
+      ordem: 2,
+    },
+    {
+      id: 'c-web',
+      nome: 'Web',
+      slug: 'web',
+      descricao: 'Tecnologias para desenvolvimento web.',
+      ordem: 3,
+    },
+  ]);
+
+  private readonly tecnologiasSubject = new BehaviorSubject<Tecnologia[]>([
     { id: 't-java', nome: 'Java', slug: 'java', descricao: 'Linguagem orientada a objetos, fortemente tipada.', categoriaId: 'c-linguagens', categoriaNome: 'Linguagens', popular: true, recente: false, versao: '21' },
     { id: 't-js', nome: 'JavaScript', slug: 'javascript', descricao: 'Linguagem da web, no navegador e no servidor.', categoriaId: 'c-linguagens', categoriaNome: 'Linguagens', popular: true, recente: false, versao: 'ES2024' },
     { id: 't-python', nome: 'Python', slug: 'python', descricao: 'Linguagem simples e versátil para scripts, dados e web.', categoriaId: 'c-linguagens', categoriaNome: 'Linguagens', popular: true, recente: false, versao: '3.13' },
     { id: 't-sql', nome: 'SQL', slug: 'sql', descricao: 'Linguagem para consultar e manipular bancos de dados relacionais.', categoriaId: 'c-bancos', categoriaNome: 'Bancos de Dados', popular: true, recente: false },
     { id: 't-html', nome: 'HTML', slug: 'html', descricao: 'Linguagem de marcação para estruturar páginas web.', categoriaId: 'c-web', categoriaNome: 'Web', popular: false, recente: true, versao: '5' },
-  ];
+  ]);
 
-  private readonly conteudos: Conteudo[] = [
+  private readonly conteudosSubject = new BehaviorSubject<Conteudo[]>([
     { id: 'c-java-arraylist', tecnologiaId: 't-java', titulo: 'ArrayList', slug: 'arraylist', texto: 'Lista dinâmica da API de coleções do Java.', ordem: 1 },
     { id: 'c-java-ordenacao', tecnologiaId: 't-java', titulo: 'Ordenação', slug: 'ordenacao', texto: 'Como ordenar listas e arrays em Java.', ordem: 2 },
     { id: 'c-js-array', tecnologiaId: 't-js', titulo: 'Array', slug: 'array', texto: 'Estrutura para guardar coleções de valores.', ordem: 1 },
@@ -25,9 +46,9 @@ export class DadosService {
     { id: 'c-sql-select', tecnologiaId: 't-sql', titulo: 'SELECT', slug: 'select', texto: 'Consulta de dados em tabelas.', ordem: 1 },
     { id: 'c-sql-join', tecnologiaId: 't-sql', titulo: 'JOIN', slug: 'join', texto: 'Combinação de linhas de duas ou mais tabelas.', ordem: 2 },
     { id: 'c-html-formularios', tecnologiaId: 't-html', titulo: 'Formulários', slug: 'formularios', texto: 'Campos e botões para entrada de dados.', ordem: 1 },
-  ];
+  ]);
 
-  private readonly exemplos: ExemploCodigo[] = [
+  private readonly exemplosSubject = new BehaviorSubject<ExemploCodigo[]>([
     { id: 'e-java-1', conteudoId: 'c-java-arraylist', titulo: 'Criando um ArrayList', linguagem: 'java', codigo: 'ArrayList<String> nomes = new ArrayList<>();' },
     { id: 'e-java-2', conteudoId: 'c-java-arraylist', titulo: 'Adicionando elementos', linguagem: 'java', codigo: 'nomes.add("Ana");' },
     { id: 'e-java-3', conteudoId: 'c-java-arraylist', titulo: 'Removendo elementos', linguagem: 'java', codigo: 'nomes.remove("Ana");' },
@@ -40,17 +61,273 @@ export class DadosService {
     { id: 'e-sql-1', conteudoId: 'c-sql-select', titulo: 'Selecionando colunas', linguagem: 'sql', codigo: 'SELECT nome, email FROM usuarios;' },
     { id: 'e-sql-2', conteudoId: 'c-sql-join', titulo: 'INNER JOIN', linguagem: 'sql', codigo: 'SELECT * FROM a INNER JOIN b ON a.id = b.a_id;' },
     { id: 'e-html-1', conteudoId: 'c-html-formularios', titulo: 'Campo de texto e botão', linguagem: 'html', codigo: '<input type="text"><button>Enviar</button>' },
-  ];
+  ]);
+
+  constructor() {
+    this.restaurarLista('devresumos_categorias', this.categoriasSubject);
+    this.restaurarLista('devresumos_tecnologias', this.tecnologiasSubject);
+    this.restaurarLista('devresumos_conteudos', this.conteudosSubject);
+    this.restaurarLista('devresumos_exemplos', this.exemplosSubject);
+  }
+
+  readonly categorias$: Observable<Categoria[]> = this.categoriasSubject.asObservable();
+  readonly tecnologias$: Observable<Tecnologia[]> = this.tecnologiasSubject.asObservable();
+  readonly conteudos$: Observable<Conteudo[]> = this.conteudosSubject.asObservable();
+  readonly exemplos$: Observable<ExemploCodigo[]> = this.exemplosSubject.asObservable();
+
+  getCategorias(): Categoria[] {
+    return this.categoriasSubject.getValue();
+  }
+
+  getCategoriaBySlug(slug: string): Categoria | undefined {
+    return this.getCategorias().find((categoria) => categoria.slug.toLowerCase() === slug.toLowerCase());
+  }
 
   getTecnologias(): Tecnologia[] {
-    return this.tecnologias;
+    return this.tecnologiasSubject.getValue();
+  }
+
+  getTecnologiasPopulares(): Tecnologia[] {
+    return this.getTecnologias().filter((tecnologia) => tecnologia.popular);
+  }
+
+  getTecnologiasRecentes(): Tecnologia[] {
+    return this.getTecnologias().filter((tecnologia) => tecnologia.recente);
+  }
+
+  getTecnologiaBySlug(slug: string): Tecnologia | undefined {
+    return this.getTecnologias().find((tecnologia) => tecnologia.slug.toLowerCase() === slug.toLowerCase());
+  }
+
+  getTecnologiasByCategoriaId(categoriaId: string): Tecnologia[] {
+    return this.getTecnologias().filter((tecnologia) => tecnologia.categoriaId === categoriaId);
   }
 
   getConteudos(): Conteudo[] {
-    return this.conteudos;
+    return this.conteudosSubject.getValue();
+  }
+
+  getConteudosByTecnologiaId(tecnologiaId: string): Conteudo[] {
+    return this.getConteudos()
+      .filter((conteudo) => conteudo.tecnologiaId === tecnologiaId)
+      .sort((a, b) => a.ordem - b.ordem);
   }
 
   getExemplos(): ExemploCodigo[] {
-    return this.exemplos;
+    return this.exemplosSubject.getValue();
+  }
+
+  getExemplosByConteudoId(conteudoId: string): ExemploCodigo[] {
+    return this.getExemplos().filter((exemplo) => exemplo.conteudoId === conteudoId);
+  }
+
+  salvarTecnologia(dados: Partial<Tecnologia>): Tecnologia {
+    const tecnologias = [...this.getTecnologias()];
+    const categoria = this.getCategorias().find((item) => item.id === dados.categoriaId);
+    const indice = dados.id ? tecnologias.findIndex((item) => item.id === dados.id) : -1;
+
+    if (indice >= 0) {
+      const atualizada = {
+        ...tecnologias[indice],
+        ...dados,
+        categoriaNome: categoria?.nome ?? tecnologias[indice].categoriaNome,
+      };
+      tecnologias[indice] = atualizada;
+      this.publicarLista('devresumos_tecnologias', this.tecnologiasSubject, tecnologias);
+      return atualizada;
+    }
+
+    const nova: Tecnologia = {
+      ...dados,
+      id: this.novoId('tec'),
+      nome: dados.nome || 'Nova Tecnologia',
+      slug: dados.slug || this.slug(dados.nome || 'nova-tecnologia'),
+      descricao: dados.descricao || '',
+      categoriaId: dados.categoriaId || this.getCategorias()[0]?.id || '',
+      categoriaNome: categoria?.nome || 'Geral',
+      popular: dados.popular ?? false,
+      recente: dados.recente ?? true,
+      resumo: dados.resumo || dados.descricao || '',
+      versao: dados.versao || '',
+    };
+    tecnologias.unshift(nova);
+    this.publicarLista('devresumos_tecnologias', this.tecnologiasSubject, tecnologias);
+    return nova;
+  }
+
+  excluirTecnologia(id: string): void {
+    const conteudosRemovidos = this.getConteudos().filter((conteudo) => conteudo.tecnologiaId === id);
+    const idsConteudos = new Set(conteudosRemovidos.map((conteudo) => conteudo.id));
+    this.publicarLista(
+      'devresumos_exemplos',
+      this.exemplosSubject,
+      this.getExemplos().filter((exemplo) => !idsConteudos.has(exemplo.conteudoId)),
+    );
+    this.publicarLista(
+      'devresumos_conteudos',
+      this.conteudosSubject,
+      this.getConteudos().filter((conteudo) => conteudo.tecnologiaId !== id),
+    );
+    this.publicarLista(
+      'devresumos_tecnologias',
+      this.tecnologiasSubject,
+      this.getTecnologias().filter((tecnologia) => tecnologia.id !== id),
+    );
+  }
+
+  salvarCategoria(dados: Partial<Categoria>): Categoria {
+    const categorias = [...this.getCategorias()];
+    const indice = dados.id ? categorias.findIndex((item) => item.id === dados.id) : -1;
+
+    if (indice >= 0) {
+      const atualizada = { ...categorias[indice], ...dados };
+      categorias[indice] = atualizada;
+      this.publicarLista(
+        'devresumos_tecnologias',
+        this.tecnologiasSubject,
+        this.getTecnologias().map((tecnologia) =>
+          tecnologia.categoriaId === atualizada.id
+            ? { ...tecnologia, categoriaNome: atualizada.nome }
+            : tecnologia,
+        ),
+      );
+      this.publicarLista('devresumos_categorias', this.categoriasSubject, categorias);
+      return atualizada;
+    }
+
+    const nova: Categoria = {
+      ...dados,
+      id: this.novoId('cat'),
+      nome: dados.nome || 'Nova Categoria',
+      slug: dados.slug || this.slug(dados.nome || 'nova-categoria'),
+      descricao: dados.descricao || '',
+      icone: dados.icone || 'folder',
+      ordem: dados.ordem ?? categorias.length + 1,
+    };
+    categorias.push(nova);
+    this.publicarLista('devresumos_categorias', this.categoriasSubject, categorias);
+    return nova;
+  }
+
+  excluirCategoria(id: string): boolean {
+    if (this.getTecnologias().some((tecnologia) => tecnologia.categoriaId === id)) return false;
+    this.publicarLista(
+      'devresumos_categorias',
+      this.categoriasSubject,
+      this.getCategorias().filter((categoria) => categoria.id !== id),
+    );
+    return true;
+  }
+
+  salvarConteudo(dados: Partial<Conteudo>): Conteudo {
+    const conteudos = [...this.getConteudos()];
+    const indice = dados.id ? conteudos.findIndex((item) => item.id === dados.id) : -1;
+
+    if (indice >= 0) {
+      const atualizado = { ...conteudos[indice], ...dados };
+      conteudos[indice] = atualizado;
+      this.publicarLista('devresumos_conteudos', this.conteudosSubject, conteudos);
+      return atualizado;
+    }
+
+    const novo: Conteudo = {
+      ...dados,
+      id: this.novoId('cnt'),
+      tecnologiaId: dados.tecnologiaId || this.getTecnologias()[0]?.id || '',
+      titulo: dados.titulo || 'Novo Assunto',
+      slug: dados.slug || this.slug(dados.titulo || 'novo-assunto'),
+      texto: dados.texto || '',
+      ordem: dados.ordem ?? conteudos.length + 1,
+    };
+    conteudos.push(novo);
+    this.publicarLista('devresumos_conteudos', this.conteudosSubject, conteudos);
+    return novo;
+  }
+
+  excluirConteudo(id: string): void {
+    this.publicarLista(
+      'devresumos_exemplos',
+      this.exemplosSubject,
+      this.getExemplos().filter((exemplo) => exemplo.conteudoId !== id),
+    );
+    this.publicarLista(
+      'devresumos_conteudos',
+      this.conteudosSubject,
+      this.getConteudos().filter((conteudo) => conteudo.id !== id),
+    );
+  }
+
+  salvarExemplo(dados: Partial<ExemploCodigo>): ExemploCodigo {
+    const exemplos = [...this.getExemplos()];
+    const indice = dados.id ? exemplos.findIndex((item) => item.id === dados.id) : -1;
+
+    if (indice >= 0) {
+      const atualizado = { ...exemplos[indice], ...dados };
+      exemplos[indice] = atualizado;
+      this.publicarLista('devresumos_exemplos', this.exemplosSubject, exemplos);
+      return atualizado;
+    }
+
+    const novo: ExemploCodigo = {
+      ...dados,
+      id: this.novoId('ex'),
+      conteudoId: dados.conteudoId || this.getConteudos()[0]?.id || '',
+      titulo: dados.titulo || 'Novo Exemplo',
+      linguagem: dados.linguagem || 'text',
+      codigo: dados.codigo || '',
+      explicacao: dados.explicacao || '',
+    };
+    exemplos.push(novo);
+    this.publicarLista('devresumos_exemplos', this.exemplosSubject, exemplos);
+    return novo;
+  }
+
+  excluirExemplo(id: string): void {
+    this.publicarLista(
+      'devresumos_exemplos',
+      this.exemplosSubject,
+      this.getExemplos().filter((exemplo) => exemplo.id !== id),
+    );
+  }
+
+  private restaurarLista<T>(chave: string, subject: BehaviorSubject<T[]>): void {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const salvo = window.localStorage.getItem(chave);
+      if (!salvo) return;
+      const dados: unknown = JSON.parse(salvo);
+      if (!Array.isArray(dados)) throw new Error(`Os dados salvos em "${chave}" não são uma lista.`);
+      subject.next(dados as T[]);
+    } catch (error) {
+      console.error(`Não foi possível restaurar "${chave}". Os dados iniciais serão usados.`, error);
+      window.localStorage.removeItem(chave);
+    }
+  }
+
+  private publicarLista<T>(chave: string, subject: BehaviorSubject<T[]>, lista: T[]): void {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(chave, JSON.stringify(lista));
+      } catch (error) {
+        console.error(`Não foi possível salvar "${chave}".`, error);
+        throw new Error('Não foi possível salvar os dados. Verifique o armazenamento do navegador e tente novamente.');
+      }
+    }
+    subject.next(lista);
+  }
+
+  private novoId(prefixo: string): string {
+    return `${prefixo}-${crypto.randomUUID()}`;
+  }
+
+  private slug(texto: string): string {
+    return texto
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
   }
 }

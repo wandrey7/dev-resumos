@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -25,6 +26,20 @@ export const routes: Routes = [
       import('./pages/auth/recuperar-senha/recuperar-senha.component').then(
         (m) => m.RecuperarSenhaComponent,
       ),
+  },
+  {
+    path: 'admin',
+    title: 'DevResumos · Painel Administrativo',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./pages/admin/admin.component').then((m) => m.AdminComponent),
+  },
+  {
+    path: 'admin/:secao',
+    title: 'DevResumos · Painel Administrativo',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./pages/admin/admin.component').then((m) => m.AdminComponent),
   },
   { path: '**', redirectTo: 'login' },
 ];
