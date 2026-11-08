@@ -3,6 +3,25 @@
     <app-cabecalho></app-cabecalho>
   }
   <main class="app-main-content">
+    @if (showBackButton) {
+      <div class="app-back-navigation">
+        <button type="button" class="app-back-button" (click)="voltar()">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Voltar
+        </button>
+      </div>
+    }
     <router-outlet />
   </main>
   @if (!isAdminPage) {
